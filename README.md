@@ -1,2 +1,0 @@
-# HealthCareSDLC-CodeNerds
-Test
