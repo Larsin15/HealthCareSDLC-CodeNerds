@@ -35,4 +35,3 @@ build/
 
 ### Application.properties ###
 application.properties
-application-*.properties
