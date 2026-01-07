@@ -21,12 +21,12 @@ public class User {
     @NotEmpty(message = "Username cannot be empty")
     private String username;
 
-    /*@Pattern(
-            regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\\-_=+{};:,<.>])(?=.{8,})" +
-                    ".*$",
+    @Column(nullable = false)
+    @Pattern(
+            regexp = "^(?=.[A-Z])(?=.[0-9])(?=.[!@#$%^&()\\-_=+{};:,<.>])(?=.{8,}).*$",
             message = "Password must be at least 8 characters long and contain at least " +
                     "one uppercase letter, one number, and one special character"
-    )*/
+    )
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)

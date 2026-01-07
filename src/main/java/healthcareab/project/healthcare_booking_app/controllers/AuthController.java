@@ -40,8 +40,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        System.out.println("Registration attempt: " + registerRequest.getUsername()
-                + " with password: " + registerRequest.getPassword());
+        // We removed the system print, this is because it is not good to print out plain text passwords in any logs
 
         if(authService.existsByUsername(registerRequest.getUsername())) {
             return ResponseEntity
