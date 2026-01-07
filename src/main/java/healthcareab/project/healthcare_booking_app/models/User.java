@@ -1,6 +1,7 @@
 package healthcareab.project.healthcare_booking_app.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
@@ -21,7 +22,7 @@ public class User {
     @NotEmpty(message = "Username cannot be empty")
     private String username;
 
-    @Column(nullable = false)
+    @NotBlank
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&()\\-_=+{};:,<.>]).{8,}$",
             message = "Password must be at least 8 characters long and contain at least " +
