@@ -13,7 +13,7 @@
 # ==========================================================================
 
 # Application name
-spring.application.name=
+spring.application.name=${APP_NAME:MySpringApp}
 
 # Database configuration
 spring.datasource.url=${DB_URL:}
