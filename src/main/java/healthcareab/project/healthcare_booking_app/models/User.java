@@ -1,30 +1,38 @@
 package healthcareab.project.healthcare_booking_app.models;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 
 import java.util.Set;
+import java.util.UUID;
 
-@Document(collection = "users")
+@Entity
+@Table(name = "users")
 public class User {
+    //Entitys
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
+    private UUID id;
 
-    @Indexed(unique = true)
+    @Column(nullable = false, unique = true)
     @NotEmpty(message = "Username cannot be empty")
     private String username;
 
-    @Pattern(
+    /*@Pattern(
             regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\\-_=+{};:,<.>])(?=.{8,})" +
                     ".*$",
             message = "Password must be at least 8 characters long and contain at least " +
                     "one uppercase letter, one number, and one special character"
-    )
+    )*/
     private String password;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name ="user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
     private String email;
@@ -42,7 +50,7 @@ public class User {
     }
 
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
