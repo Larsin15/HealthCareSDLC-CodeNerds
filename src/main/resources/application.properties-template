@@ -1,0 +1,29 @@
+# ==========================================================================
+# Description:
+# This template only acts as a template for application configuration.
+# The real configuration is hidden in application.properties.
+# Uses environment variables for sensitive data, instead of exposing real values here.
+# ==========================================================================
+
+# ==========================================================================
+# INSTRUCTIONS
+# Application Configuration Template
+# Copy this file to application.properties and fill in the required values
+# Or use environment variables (recommended for sensitive data).
+# ==========================================================================
+
+# Application name
+spring.application.name=${APP_NAME:MySpringApp}
+
+# Database configuration
+spring.datasource.url=${DB_URL:}
+spring.datasource.username=${DB_USERNAME:}
+spring.datasource.password=${DB_PASSWORD:}
+
+# JPA configuration
+spring.jpa.hibernate.ddl-auto=${JPA_DDL_AUTO:update}
+spring.jpa.show-sql=${JPA_SHOW_SQL:false}
+spring.jpa.properties.hibernate.dialect=${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
+
+jwt.secret=${JWT_SECRET:}
+jwt.expirationMs=${JWT_EXPIRATION_MS:3600000}
