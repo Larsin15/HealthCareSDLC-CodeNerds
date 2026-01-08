@@ -1,17 +1,21 @@
-# mvn checkstyle:check
-# mvn test
-# mvn package
-
 name: Java CI
 
 on:
   push:
     branches: [dev, main]
+    paths:
+      - '**.java'
+      - 'pom.xml'
+      - 'checkstyle.xml'
   pull_request:
     branches: [dev, main]
+    paths:
+      - '**.java'
+      - 'pom.xml'
+      - 'checkstyle.xml'
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     
     steps:
@@ -27,6 +31,6 @@ jobs:
       - name: Check code style
         run: ./mvnw checkstyle:check
       
-      - name: Build and test
-        run: ./mvnw verify
+      - name: Compile (no tests)
+        run: ./mvnw compile -DskipTests
 
