@@ -28,6 +28,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
       
+      - name: Cache Maven wrapper
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/wrapper
+          key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('**/maven-wrapper.properties') }}
+      
       - name: Check code style
         run: ./mvnw checkstyle:check
       
