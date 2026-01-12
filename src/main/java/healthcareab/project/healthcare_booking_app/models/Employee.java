@@ -31,6 +31,7 @@ public class Employee extends User {
         super();
     }
 
+    //--------------------TEMPLATE METHODS --------------------------
     @Override
     protected void onBeforeCreate() {
         super.onBeforeCreate(); //Call parent hook first
@@ -63,6 +64,7 @@ public class Employee extends User {
             throw new IllegalArgumentException("Hire date cannot be in the future");
         }
     }
+ //------------------------------------------------------------------------------------------
 
     /**
      * Checks if employee can accept bookings.
@@ -76,6 +78,9 @@ public class Employee extends User {
     public boolean canAcceptBookings() {
         return availableForBooking && getRoles() != null && getRoles().contains(Role.EMPLOYEE);
     }
+
+
+    //------------------GETTERS & SETTERS---------------------------
 
     public String getEmployeeNumber() {
         return employeeNumber;
