@@ -63,6 +63,23 @@ public abstract class User {
         this.password = password;
         this.roles = roles;
     }
+    /**
+     * Sets timestamps and calls hook method for subclass specific logic.
+     */
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        onBeforeCreate(); // Hook method, subclasses override this
+    }
+    /**
+     * Updates timestamp and calls hook method for subclass specific logic.
+     */
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+        onBeforeUpdate(); // Hook method, subclasses override this
+    }
 
 
     public UUID getId() {
