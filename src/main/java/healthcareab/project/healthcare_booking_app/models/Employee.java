@@ -61,4 +61,17 @@ public class Employee extends User {
         }
     }
 
+    /**
+     * Checks if employee can accept bookings.
+     *
+     * Rules:
+     * - Employee must be marked as available for booking
+     * - Employee must have EMPLOYEE role
+     *
+     * Will be used when we check availability slots
+     */
+    public boolean canAcceptBookings() {
+        return availableForBooking && getRoles() != null && getRoles().contains(Role.EMPLOYEE);
+    }
+
 }
