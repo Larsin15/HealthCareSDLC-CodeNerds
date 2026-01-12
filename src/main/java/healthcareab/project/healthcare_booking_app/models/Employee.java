@@ -46,4 +46,19 @@ public class Employee extends User {
         }
     }
 
+    @Override
+    public void validateSpecificRules() {
+        if (employeeNumber == null || employeeNumber.isEmpty()) {
+            throw new IllegalArgumentException("Employee must have an employee number");
+        }
+
+        if (specialization == null || specialization.isEmpty()) {
+            throw new IllegalArgumentException("Employee must have a specialization");
+        }
+
+        if (hireDate != null && hireDate.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Hire date cannot be in the future");
+        }
+    }
+
 }
