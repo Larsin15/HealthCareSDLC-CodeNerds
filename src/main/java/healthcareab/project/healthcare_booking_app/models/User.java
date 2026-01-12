@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Pattern;
 import java.util.Set;
 import java.util.UUID;
 
+
 @Entity
 @Table(name = "users")
 public class User {
