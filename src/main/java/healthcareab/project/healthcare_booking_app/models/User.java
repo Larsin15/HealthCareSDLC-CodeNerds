@@ -11,7 +11,9 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-public class User { //Patient
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class User {
     //Entitys
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -36,11 +38,22 @@ public class User { //Patient
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-
+    @Column(nullable = false)
     private String email;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
+
     private String address;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public User() {
     }
