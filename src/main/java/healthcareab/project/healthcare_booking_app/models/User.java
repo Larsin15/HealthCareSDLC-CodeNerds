@@ -36,6 +36,7 @@ public class User { //Patient
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
+
     private String email;
     private String firstName;
     private String lastName;
