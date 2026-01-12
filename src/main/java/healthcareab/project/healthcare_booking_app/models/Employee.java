@@ -1,3 +1,4 @@
+import healthcareab.project.healthcare_booking_app.models.Role;
 import healthcareab.project.healthcare_booking_app.models.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
@@ -30,6 +31,19 @@ public class Employee extends User {
     @Override
     protected void onBeforeCreate() {
         super.onBeforeCreate(); //Call parent hook first
+
+        if (getRoles() == null || getRoles().isEmpty()) {
+            setRoles(java.util.Set.of(Role.EMPLOYEE));
+        } else if (!getRoles().contains(Role.EMPLOYEE)) {
+            // Here we add EMPLOYEE role
+            java.util.Set<Role> roles = new java.util.HashSet<>(getRoles());
+            roles.add(Role.EMPLOYEE);
+            setRoles(roles);
+        }
+        // Set default hire date to today if not provided
+        if (hireDate == null) {
+            hireDate = LocalDate.now();
+        }
     }
 
 }
