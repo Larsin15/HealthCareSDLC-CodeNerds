@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
-
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -125,7 +125,6 @@ public abstract class User {
         this.password = password;
     }
 
-
     public Set<Role> getRoles() {
         return roles;
     }
@@ -164,5 +163,13 @@ public abstract class User {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
