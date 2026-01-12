@@ -53,7 +53,7 @@ public class AuthController {
         user.setPassword(registerRequest.getPassword());
 
         if(registerRequest.getRoles() == null || registerRequest.getRoles().isEmpty()) {
-            user.setRoles(Set.of(Role.USER));
+            user.setRoles(Set.of(Role.PATIENT));
         } else {
             user.setRoles(registerRequest.getRoles());
         }
