@@ -1,5 +1,5 @@
-import healthcareab.project.healthcare_booking_app.models.Role;
-import healthcareab.project.healthcare_booking_app.models.User;
+package healthcareab.project.healthcare_booking_app.models;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -17,6 +17,9 @@ public class Employee extends User {
 
     @Column(name = "specialization", length = 100)
     private String specialization;
+
+    @Column(name = "department", length = 100)
+    private String department;
 
     @Column(name = "hirde_date")
     private LocalDate hireDate;
@@ -74,4 +77,43 @@ public class Employee extends User {
         return availableForBooking && getRoles() != null && getRoles().contains(Role.EMPLOYEE);
     }
 
+    public String getEmployeeNumber() {
+        return employeeNumber;
+    }
+
+    public void setEmployeeNumber(String employeeNumber) {
+        this.employeeNumber = employeeNumber;
+    }
+
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public LocalDate getHireDate() {
+        return hireDate;
+    }
+
+    public void setHireDate(LocalDate hireDate) {
+        this.hireDate = hireDate;
+    }
+
+    public boolean isAvailableForBooking() {
+        return availableForBooking;
+    }
+
+    public void setAvailableForBooking(boolean availableForBooking) {
+        this.availableForBooking = availableForBooking;
+    }
 }
