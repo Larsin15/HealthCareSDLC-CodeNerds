@@ -81,6 +81,29 @@ public abstract class User {
         onBeforeUpdate(); // Hook method, subclasses override this
     }
 
+    /**
+     * Hook Method: Called before creating new entity.
+     * Subclasses override to set default roles or perform initialization.
+     */
+    protected void onBeforeCreate() {
+        // Subclasses override for custom initialization
+    }
+
+    /**
+     * Hook Method: Called before updating entity.
+     * Subclasses override for custom update logic.
+     */
+    protected void onBeforeUpdate() {
+        // Subclasses override for custom update logic
+    }
+
+    /**
+     * Template Method: Abstract validation method.
+     * Each subclass MUST implement its own validation rules.
+     * - Patient: Must have social security number and date of birth
+     * - Employee: Must have employee number and specialization
+     */
+    public abstract void validateSpecificRules();
 
     public UUID getId() {
         return id;
