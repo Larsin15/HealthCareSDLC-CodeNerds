@@ -11,6 +11,7 @@ import java.util.Set;
 @Component
 public class UserFactory {
 
+    // Encapsulates the creation logic for different user types
     public User createUser(Role role, String username, String password, String email) {
 
         User user;
@@ -27,11 +28,12 @@ public class UserFactory {
                 user = employee;
             }
             case ADMIN -> {
+                // Admin is an employee with ADMIN role
                 Employee admin = new Employee();
                 admin.setRoles(Set.of(Role.ADMIN));
                 user = admin;
             }
-            default -> throw new IllegalStateException("Unknown role: " + role);
+            default -> throw new IllegalArgumentException("Unknown role: " + role);
         }
 
         user.setUsername(username);
