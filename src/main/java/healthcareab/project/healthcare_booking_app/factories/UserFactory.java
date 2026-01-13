@@ -42,4 +42,38 @@ public class UserFactory {
 
         return user;
     }
+
+    public Patient createPatient(
+            String username,
+            String password,
+            String email,
+            String firstName,
+            String lastName,
+            java.time.LocalDate dateOfBirth) {
+
+        Patient patient = (Patient) createUser(Role.PATIENT, username, password, email);
+        patient.setFirstName(firstName);
+        patient.setLastName(lastName);
+        patient.setDateOfBirth(dateOfBirth);
+
+        return patient;
+    }
+
+    public Employee createEmployee(
+            String username,
+            String password,
+            String email,
+            String firstName,
+            String lastName,
+            String employeeNumber,
+            String specialization) {
+
+        Employee employee = (Employee) createUser(Role.EMPLOYEE, username, password, email);
+        employee.setFirstName(firstName);
+        employee.setLastName(lastName);
+        employee.setEmployeeNumber(employeeNumber);
+        employee.setSpecialization(specialization);
+
+        return employee;
+    }
 }
