@@ -160,4 +160,22 @@ public class AuthController {
         ));
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = authService.findByUsername(userDetails.getUsername());
+
+        AuthResponse profileResponse = new AuthResponse(
+                "Profile fetched successfully",
+                user.getUsername(),
+                user.getRoles(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getAddress()
+        );
+        return ResponseEntity.ok(profileResponse);
+    }
 }
