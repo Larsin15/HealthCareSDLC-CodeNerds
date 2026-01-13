@@ -50,7 +50,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
                         // Authenticated endpoints
-                        .requestMatchers("/auth/login", "/auth/profile").authenticated()
+                        .requestMatchers("/auth/logout", "/auth/profile").authenticated()
                         // any other requests the user need to be logged
                         .anyRequest().authenticated()
                 )
