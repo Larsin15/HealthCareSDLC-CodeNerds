@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @DiscriminatorValue("EMPLOYEE")
 public class Employee extends User {
 
-    @Column(name = "employee_number", unique = true, nullable = false, length = 20)
+    @Column(name = "employee_number", unique = true, nullable = true, length = 5)
     @NotBlank(message = "Employee number is required")
     private String employeeNumber;
 

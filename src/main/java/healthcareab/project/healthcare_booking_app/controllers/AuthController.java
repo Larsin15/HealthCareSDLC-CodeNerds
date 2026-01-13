@@ -5,6 +5,8 @@ import healthcareab.project.healthcare_booking_app.dto.AuthResponse;
 import healthcareab.project.healthcare_booking_app.dto.RegisterRequest;
 import healthcareab.project.healthcare_booking_app.dto.RegisterResponse;
 import healthcareab.project.healthcare_booking_app.factories.UserFactory;
+import healthcareab.project.healthcare_booking_app.models.Employee;
+import healthcareab.project.healthcare_booking_app.models.Patient;
 import healthcareab.project.healthcare_booking_app.models.Role;
 import healthcareab.project.healthcare_booking_app.models.User;
 import healthcareab.project.healthcare_booking_app.services.AuthService;
@@ -60,6 +62,15 @@ public class AuthController {
 
         user.setFirstName(registerRequest.getFirstName());
         user.setLastName(registerRequest.getLastName());
+
+        if (user instanceof Patient patient) {
+            patient.setPhoneNumber(registerRequest.getPhoneNumber());
+            patient.setDateOfBirth(registerRequest.getDateOfBirth());
+        } else if (user instanceof Employee employee) {
+            employee.setEmployeeNumber(registerRequest.getEmployeeNumber());
+            employee.setSpecialization(registerRequest.getSpecialization());
+            employee.setDepartment(registerRequest.getDepartment());
+        }
 
         authService.registerUser(user);
 

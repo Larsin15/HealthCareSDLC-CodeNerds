@@ -30,6 +30,8 @@ public class AuthService {
             user.setRoles(Set.of(Role.PATIENT));
         }
 
+        user.validateSpecificRules();
+
         userRepository.save(user);
     }
 

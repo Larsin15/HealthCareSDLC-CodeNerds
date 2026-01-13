@@ -3,7 +3,6 @@ package healthcareab.project.healthcare_booking_app.models;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 
@@ -11,15 +10,15 @@ import java.time.LocalDate;
 @DiscriminatorValue("PATIENT")
 public class Patient extends User {
 
-    @Column(name = "phone_number", unique = true, nullable = false, length = 10)
-    @Pattern(
+    @Column(name = "phone_number", unique = true, nullable = true, length = 10)
+    /*@Pattern(
             regexp = "^(\\+46|0)7[0-9]{8}$",
-            message = "Ogiltigt svenskt mobilnummer")
+            message = "Ogiltigt svenskt mobilnummer")*/
     private String phoneNumber;
 
     @Column(name = "date_of_birth")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}-\\d{4}$",
-            message = "Date of Birth must be in the format YYYY-MM-DD-XXXX")
+    /*@Pattern(regexp = "^\\d{8}$",
+            message = "Date of Birth must be in the format YYYY-MM-DD")*/
     private LocalDate dateOfBirth; // In development, no last 4 digits validation yet
 
     public Patient() {
