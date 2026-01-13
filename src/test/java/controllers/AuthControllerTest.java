@@ -257,7 +257,261 @@ public class AuthControllerTest {
         ));
     }
 
+    // ========== ADMIN TESTS ==========
 
+    @Test
+    @DisplayName("Should successfully register a new admin")
+    void register_WithAdminRequest_ShouldSetAdminFields() {
+        // Arrange
+        RegisterRequest adminRequest = new RegisterRequest();
+        adminRequest.setUsername("admin@test.com");
+        adminRequest.setPassword("SecurePass123!");
+        adminRequest.setEmail("admin@test.com");
+        adminRequest.setFirstName("Admin");
+        adminRequest.setLastName("User");
+        adminRequest.setEmployeeNumber("ADM001");
+        adminRequest.setSpecialization("Administration");
+        adminRequest.setDepartment("Management");
+        adminRequest.setRoles(Set.of(Role.ADMIN));
+
+        var mockAdmin = new healthcareab.project.healthcare_booking_app.models.Employee();
+        mockAdmin.setUsername("admin@test.com");
+        mockAdmin.setEmail("admin@test.com");
+        mockAdmin.setFirstName("Admin");
+        mockAdmin.setLastName("User");
+        mockAdmin.setEmployeeNumber("ADM001");
+        mockAdmin.setSpecialization("Administration");
+        mockAdmin.setDepartment("Management");
+        mockAdmin.setRoles(Set.of(Role.ADMIN));
+
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(eq(Role.ADMIN), anyString(), anyString(), anyString()))
+                .thenReturn(mockAdmin);
+        doNothing().when(authService).registerUser(any(User.class));
+
+        // Act
+        ResponseEntity<?> response = authController.register(adminRequest);
+
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody() instanceof RegisterResponse);
+
+        RegisterResponse registerResponse = (RegisterResponse) response.getBody();
+        assertEquals("User registered successfully", registerResponse.getMessage());
+        assertEquals("admin@test.com", registerResponse.getUsername());
+
+        verify(authService).registerUser(argThat(user ->
+                user instanceof healthcareab.project.healthcare_booking_app.models.Employee &&
+                        ((healthcareab.project.healthcare_booking_app.models.Employee) user)
+                                .getEmployeeNumber().equals("ADM001") &&
+                        user.getRoles().contains(Role.ADMIN)
+        ));
+    }
+
+    // ========== VALIDATION ERROR TESTS ==========
+
+    @Test
+    @DisplayName("Should handle employee registration with missing employee number")
+    void register_WithEmployeeMissingEmployeeNumber_ShouldHandleGracefully() {
+        // Arrange
+        RegisterRequest employeeRequest = new RegisterRequest();
+        employeeRequest.setUsername("employee@test.com");
+        employeeRequest.setPassword("SecurePass123!");
+        employeeRequest.setEmail("employee@test.com");
+        employeeRequest.setFirstName("Jane");
+        employeeRequest.setLastName("Smith");
+        employeeRequest.setEmployeeNumber(null); // Missing!
+        employeeRequest.setSpecialization("Cardiology");
+        employeeRequest.setRoles(Set.of(Role.EMPLOYEE));
+
+        var mockEmployee = new healthcareab.project.healthcare_booking_app.models.Employee();
+        mockEmployee.setUsername("employee@test.com");
+        mockEmployee.setEmail("employee@test.com");
+        mockEmployee.setFirstName("Jane");
+        mockEmployee.setLastName("Smith");
+        // employeeNumber is NOT set (null)
+        mockEmployee.setSpecialization("Cardiology");
+        mockEmployee.setRoles(Set.of(Role.EMPLOYEE));
+
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(any(), anyString(), anyString(), anyString()))
+                .thenReturn(mockEmployee);
+
+        // Mock registerUser to throw exception when employeeNumber is null
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            if (user instanceof healthcareab.project.healthcare_booking_app.models.Employee) {
+                healthcareab.project.healthcare_booking_app.models.Employee emp =
+                        (healthcareab.project.healthcare_booking_app.models.Employee) user;
+                if (emp.getEmployeeNumber() == null || emp.getEmployeeNumber().isEmpty()) {
+                    throw new IllegalArgumentException("Employee must have an employee number");
+                }
+            }
+            return null;
+        }).when(authService).registerUser(any(User.class));
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authController.register(employeeRequest);
+        }, "Should throw IllegalArgumentException when employee number is missing");
+    }
+
+    @Test
+    @DisplayName("Should handle employee registration with missing specialization")
+    void register_WithEmployeeMissingSpecialization_ShouldHandleGracefully() {
+        // Arrange
+        RegisterRequest employeeRequest = new RegisterRequest();
+        employeeRequest.setUsername("employee@test.com");
+        employeeRequest.setPassword("SecurePass123!");
+        employeeRequest.setEmail("employee@test.com");
+        employeeRequest.setFirstName("Jane");
+        employeeRequest.setLastName("Smith");
+        employeeRequest.setEmployeeNumber("EMP001");
+        employeeRequest.setSpecialization(null); // Missing!
+        employeeRequest.setRoles(Set.of(Role.EMPLOYEE));
+
+        var mockEmployee = new healthcareab.project.healthcare_booking_app.models.Employee();
+        mockEmployee.setUsername("employee@test.com");
+        mockEmployee.setEmail("employee@test.com");
+        mockEmployee.setFirstName("Jane");
+        mockEmployee.setLastName("Smith");
+        mockEmployee.setEmployeeNumber("EMP001");
+        // specialization is NOT set (null)
+        mockEmployee.setRoles(Set.of(Role.EMPLOYEE));
+
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(any(), anyString(), anyString(), anyString()))
+                .thenReturn(mockEmployee);
+
+        // Mock registerUser to throw exception when specialization is null
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            if (user instanceof healthcareab.project.healthcare_booking_app.models.Employee) {
+                healthcareab.project.healthcare_booking_app.models.Employee emp =
+                        (healthcareab.project.healthcare_booking_app.models.Employee) user;
+                if (emp.getSpecialization() == null || emp.getSpecialization().isEmpty()) {
+                    throw new IllegalArgumentException("Employee must have a specialization");
+                }
+            }
+            return null;
+        }).when(authService).registerUser(any(User.class));
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authController.register(employeeRequest);
+        }, "Should throw IllegalArgumentException when specialization is missing");
+    }
+
+    @Test
+    @DisplayName("Should handle patient registration with missing phone number")
+    void register_WithPatientMissingPhoneNumber_ShouldSetFields() {
+        // Arrange
+        RegisterRequest patientRequest = new RegisterRequest();
+        patientRequest.setUsername("patient2@test.com");
+        patientRequest.setPassword("SecurePass123!");
+        patientRequest.setEmail("patient2@test.com");
+        patientRequest.setFirstName("John");
+        patientRequest.setLastName("Doe");
+        patientRequest.setPhoneNumber(null); // Missing
+        patientRequest.setDateOfBirth(LocalDate.of(1993, 4, 14));
+        patientRequest.setRoles(Set.of(Role.PATIENT));
+
+        Patient mockPatient2 = new Patient();
+        mockPatient2.setUsername("patient2@test.com");
+        mockPatient2.setEmail("patient2@test.com");
+        mockPatient2.setFirstName("John");
+        mockPatient2.setLastName("Doe");
+        mockPatient2.setDateOfBirth(LocalDate.of(1993, 4, 14));
+        mockPatient2.setRoles(Set.of(Role.PATIENT));
+
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(any(), anyString(), anyString(), anyString()))
+                .thenReturn(mockPatient2);
+        doNothing().when(authService).registerUser(any(User.class));
+
+        // Act
+        ResponseEntity<?> response = authController.register(patientRequest);
+
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(authService).registerUser(argThat(user ->
+                user instanceof Patient &&
+                        ((Patient) user).getPhoneNumber() == null
+        ));
+    }
+
+    @Test
+    @DisplayName("Should handle patient registration with missing date of birth")
+    void register_WithPatientMissingDateOfBirth_ShouldSetFields() {
+        // Arrange
+        RegisterRequest patientRequest = new RegisterRequest();
+        patientRequest.setUsername("patient3@test.com");
+        patientRequest.setPassword("SecurePass123!");
+        patientRequest.setEmail("patient3@test.com");
+        patientRequest.setFirstName("John");
+        patientRequest.setLastName("Doe");
+        patientRequest.setPhoneNumber("+46712345678");
+        patientRequest.setDateOfBirth(null); // Missing
+        patientRequest.setRoles(Set.of(Role.PATIENT));
+
+        Patient mockPatient3 = new Patient();
+        mockPatient3.setUsername("patient3@test.com");
+        mockPatient3.setEmail("patient3@test.com");
+        mockPatient3.setFirstName("John");
+        mockPatient3.setLastName("Doe");
+        mockPatient3.setPhoneNumber("+46712345678");
+        // dateOfBirth is NOT set (null)
+        mockPatient3.setRoles(Set.of(Role.PATIENT));
+
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(any(), anyString(), anyString(), anyString()))
+                .thenReturn(mockPatient3);
+
+        // Mock registerUser to throw exception when dateOfBirth is null
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            if (user instanceof Patient) {
+                Patient patient = (Patient) user;
+                if (patient.getDateOfBirth() == null) {
+                    throw new IllegalArgumentException("Patient must have a date of birth");
+                }
+            }
+            return null;
+        }).when(authService).registerUser(any(User.class));
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authController.register(patientRequest);
+        }, "Should throw IllegalArgumentException when date of birth is missing");
+    }
+
+    @Test
+    @DisplayName("Should handle empty roles set by using default PATIENT role")
+    void register_WithEmptyRolesSet_ShouldUseDefaultPatientRole() {
+        // Arrange
+        validRegisterRequest.setRoles(Set.of()); // Empty set
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(
+                eq(Role.PATIENT), // Should default to PATIENT
+                anyString(),
+                anyString(),
+                anyString()
+        )).thenReturn(mockPatient);
+        doNothing().when(authService).registerUser(any(User.class));
+
+        // Act
+        ResponseEntity<?> response = authController.register(validRegisterRequest);
+
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(userFactory, times(1)).createUser(
+                eq(Role.PATIENT),
+                anyString(),
+                anyString(),
+                anyString()
+        );
+    }
 
 
 }
