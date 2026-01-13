@@ -40,25 +40,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CORS config
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // CSRF, disable in dev
-                // OBS! should not be disabled in production
                 .csrf(csrf -> csrf.disable())
-                // define URL based rules
+
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers("/auth/**").permitAll()
-                        // any other requests the user need to be logged
+
+                        // RBAC rules
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/doctor/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers("/api/patient/**").hasRole("PATIENT")
+
+                        // Everything else needs authentication
                         .anyRequest().authenticated()
                 )
-                // disable session due to jwt statelessness
+
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // add jwt filter before standard filter
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return  http.build();
+
+        return http.build();
     }
+
 
 
     @Bean
