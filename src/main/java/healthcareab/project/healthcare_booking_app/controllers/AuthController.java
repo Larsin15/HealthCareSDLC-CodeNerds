@@ -40,23 +40,25 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        // We removed the system print, this is because it is not good to print out plain text passwords in any logs
-
         if(authService.existsByUsername(registerRequest.getUsername())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("Username already exists.");
         }
 
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(registerRequest.getPassword());
+        Role role = (registerRequest.getRoles() != null && !registerRequest.getRoles().isEmpty())
+                ? registerRequest.getRoles().iterator().next()
+                : Role.PATIENT;
 
-        if(registerRequest.getRoles() == null || registerRequest.getRoles().isEmpty()) {
-            user.setRoles(Set.of(Role.PATIENT));
-        } else {
-            user.setRoles(registerRequest.getRoles());
-        }
+        User user = userFactory.createUser(
+                role,
+                registerRequest.getUsername(),
+                registerRequest.getPassword(),
+                registerRequest.getEmail()
+        );
+
+        user.setFirstName(registerRequest.getFirstName());
+        user.setLastName(registerRequest.getLastName());
 
         authService.registerUser(user);
 
