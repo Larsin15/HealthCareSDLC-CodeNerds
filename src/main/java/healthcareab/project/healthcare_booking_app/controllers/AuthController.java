@@ -4,6 +4,7 @@ import healthcareab.project.healthcare_booking_app.dto.AuthRequest;
 import healthcareab.project.healthcare_booking_app.dto.AuthResponse;
 import healthcareab.project.healthcare_booking_app.dto.RegisterRequest;
 import healthcareab.project.healthcare_booking_app.dto.RegisterResponse;
+import healthcareab.project.healthcare_booking_app.factories.UserFactory;
 import healthcareab.project.healthcare_booking_app.models.Role;
 import healthcareab.project.healthcare_booking_app.models.User;
 import healthcareab.project.healthcare_booking_app.services.AuthService;
@@ -23,19 +24,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final AuthService authService;
+    private final UserFactory userFactory;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, AuthService authService) {
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, AuthService authService, UserFactory userFactory) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.authService = authService;
+        this.userFactory = userFactory;
     }
 
     @PostMapping("/register")
