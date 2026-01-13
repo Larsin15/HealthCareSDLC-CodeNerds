@@ -2,6 +2,8 @@ package controllers;
 
 
 import healthcareab.project.healthcare_booking_app.controllers.AuthController;
+import healthcareab.project.healthcare_booking_app.dto.AuthRequest;
+import healthcareab.project.healthcare_booking_app.dto.AuthResponse;
 import healthcareab.project.healthcare_booking_app.dto.RegisterRequest;
 import healthcareab.project.healthcare_booking_app.dto.RegisterResponse;
 import healthcareab.project.healthcare_booking_app.factories.UserFactory;
@@ -10,6 +12,7 @@ import healthcareab.project.healthcare_booking_app.models.Role;
 import healthcareab.project.healthcare_booking_app.models.User;
 import healthcareab.project.healthcare_booking_app.services.AuthService;
 import healthcareab.project.healthcare_booking_app.utils.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -513,5 +519,279 @@ public class AuthControllerTest {
         );
     }
 
+    // ========== LOGIN TESTS ==========
 
+    @Test
+    @DisplayName("Should successfully login with valid credentials")
+    void login_WithValidCredentials_ShouldReturnOk() {
+        // Arrange
+        AuthRequest authRequest = new AuthRequest("patient@test.com", "SecurePass123!");
+
+        // Mock UserDetails from authentication
+        org.springframework.security.core.userdetails.UserDetails userDetails =
+                org.springframework.security.core.userdetails.User.builder()
+                        .username("patient@test.com")
+                        .password("encodedPassword")
+                        .authorities("ROLE_PATIENT")
+                        .build();
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+
+        // Mock User from database
+        Patient mockUser = new Patient();
+        mockUser.setUsername("patient@test.com");
+        mockUser.setEmail("patient@test.com");
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setRoles(Set.of(Role.PATIENT));
+        mockUser.setAddress(null);
+
+        when(authService.findByUsername("patient@test.com")).thenReturn(mockUser);
+        when(jwtUtil.generateToken(any(org.springframework.security.core.userdetails.UserDetails.class)))
+                .thenReturn("mockJwtToken");
+
+        HttpServletResponse httpResponse = mock(HttpServletResponse.class);
+
+        // Act
+        ResponseEntity<?> response = authController.login(authRequest, httpResponse);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody() instanceof AuthResponse);
+
+        AuthResponse authResponse = (AuthResponse) response.getBody();
+        assertEquals("patient@test.com", authResponse.getUsername());
+        assertEquals("John", authResponse.getFirstName());
+        assertEquals("Doe", authResponse.getLastName());
+
+        // Verify JWT cookie is set
+        assertNotNull(response.getHeaders().get("Set-Cookie"));
+        assertTrue(response.getHeaders().get("Set-Cookie").toString().contains("jwt"));
+
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(jwtUtil, times(1)).generateToken(any(org.springframework.security.core.userdetails.UserDetails.class));
+        verify(authService, times(5)).findByUsername("patient@test.com"); // Fixed: Called 5 times (not 6)
+    }
+
+    @Test
+    @DisplayName("Should return UNAUTHORIZED with incorrect password")
+    void login_WithIncorrectPassword_ShouldReturnUnauthorized() {
+        // Arrange
+        AuthRequest authRequest = new AuthRequest("patient@test.com", "WrongPassword123!");
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new org.springframework.security.authentication.BadCredentialsException("Bad credentials"));
+
+        HttpServletResponse httpResponse = mock(HttpServletResponse.class);
+
+        // Act
+        ResponseEntity<?> response = authController.login(authRequest, httpResponse);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Incorrect username or password", response.getBody());
+
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(jwtUtil, never()).generateToken(any());
+        verify(authService, never()).findByUsername(anyString());
+    }
+
+    @Test
+    @DisplayName("Should return UNAUTHORIZED with non-existent username")
+    void login_WithNonExistentUsername_ShouldReturnUnauthorized() {
+        // Arrange
+        AuthRequest authRequest = new AuthRequest("nonexistent@test.com", "SecurePass123!");
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
+
+        HttpServletResponse httpResponse = mock(HttpServletResponse.class);
+
+        // Act
+        ResponseEntity<?> response = authController.login(authRequest, httpResponse);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Incorrect username or password", response.getBody());
+
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(jwtUtil, never()).generateToken(any());
+    }
+
+    @Test
+    @DisplayName("Should set JWT cookie with correct properties")
+    void login_WithValidCredentials_ShouldSetJwtCookie() {
+        // Arrange
+        AuthRequest authRequest = new AuthRequest("patient@test.com", "SecurePass123!");
+
+        org.springframework.security.core.userdetails.UserDetails userDetails =
+                org.springframework.security.core.userdetails.User.builder()
+                        .username("patient@test.com")
+                        .password("encodedPassword")
+                        .authorities("ROLE_PATIENT")
+                        .build();
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+
+        Patient mockUser = new Patient();
+        mockUser.setUsername("patient@test.com");
+        mockUser.setEmail("patient@test.com");
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setRoles(Set.of(Role.PATIENT));
+        mockUser.setAddress(null);
+
+        when(authService.findByUsername("patient@test.com")).thenReturn(mockUser);
+        when(jwtUtil.generateToken(any(org.springframework.security.core.userdetails.UserDetails.class)))
+                .thenReturn("mockJwtToken123");
+
+        HttpServletResponse httpResponse = mock(HttpServletResponse.class);
+
+        // Act
+        ResponseEntity<?> response = authController.login(authRequest, httpResponse);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        // Verify cookie properties
+        String cookieHeader = response.getHeaders().get("Set-Cookie").get(0);
+        assertTrue(cookieHeader.contains("jwt=mockJwtToken123"));
+        assertTrue(cookieHeader.contains("HttpOnly"));
+        assertTrue(cookieHeader.contains("Path=/"));
+        assertTrue(cookieHeader.contains("SameSite=Strict"));
+    }
+
+    @Test
+    @DisplayName("Should login employee successfully")
+    void login_WithEmployeeCredentials_ShouldReturnOk() {
+        // Arrange
+        AuthRequest authRequest = new AuthRequest("employee@test.com", "SecurePass123!");
+
+        org.springframework.security.core.userdetails.UserDetails userDetails =
+                org.springframework.security.core.userdetails.User.builder()
+                        .username("employee@test.com")
+                        .password("encodedPassword")
+                        .authorities("ROLE_EMPLOYEE")
+                        .build();
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+
+        healthcareab.project.healthcare_booking_app.models.Employee mockEmployee =
+                new healthcareab.project.healthcare_booking_app.models.Employee();
+        mockEmployee.setUsername("employee@test.com");
+        mockEmployee.setEmail("employee@test.com");
+        mockEmployee.setFirstName("Jane");
+        mockEmployee.setLastName("Smith");
+        mockEmployee.setRoles(Set.of(Role.EMPLOYEE));
+        mockEmployee.setAddress("123 Main St");
+
+        when(authService.findByUsername("employee@test.com")).thenReturn(mockEmployee);
+        when(jwtUtil.generateToken(any(org.springframework.security.core.userdetails.UserDetails.class)))
+                .thenReturn("mockJwtToken");
+
+        HttpServletResponse httpResponse = mock(HttpServletResponse.class);
+
+        // Act
+        ResponseEntity<?> response = authController.login(authRequest, httpResponse);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+
+        AuthResponse authResponse = (AuthResponse) response.getBody();
+        assertEquals("employee@test.com", authResponse.getUsername());
+        assertEquals("Jane", authResponse.getFirstName());
+        assertEquals("Smith", authResponse.getLastName());
+        assertEquals("123 Main St", authResponse.getAddress());
+        assertTrue(authResponse.getRoles().contains(Role.EMPLOYEE));
+    }
+
+    // ========== LOGOUT TESTS ==========
+
+    @Test
+    @DisplayName("Should successfully logout")
+    void logout_ShouldReturnOk() {
+        // Arrange
+        HttpServletResponse httpResponse = mock(HttpServletResponse.class);
+
+        // Act
+        ResponseEntity<?> response = authController.logout(httpResponse);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Logout successful!", response.getBody());
+
+        // Verify cookie is cleared
+        String cookieHeader = response.getHeaders().get("Set-Cookie").get(0);
+        assertTrue(cookieHeader.contains("jwt="));
+        assertTrue(cookieHeader.contains("Max-Age=0"));
+    }
+
+    // ========== CHECK AUTHENTICATION TESTS ==========
+
+    @Test
+    @DisplayName("Should return authenticated user info when authenticated")
+    void checkAuthentication_WhenAuthenticated_ShouldReturnUserInfo() {
+        // Arrange
+        org.springframework.security.core.userdetails.UserDetails userDetails =
+                org.springframework.security.core.userdetails.User.builder()
+                        .username("patient@test.com")
+                        .password("encodedPassword")
+                        .authorities("ROLE_PATIENT")
+                        .build();
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Patient mockUser = new Patient();
+        mockUser.setUsername("patient@test.com");
+        mockUser.setEmail("patient@test.com");
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setRoles(Set.of(Role.PATIENT));
+        mockUser.setAddress(null);
+
+        when(authService.findByUsername("patient@test.com")).thenReturn(mockUser);
+
+        // Act
+        ResponseEntity<?> response = authController.checkAuthentication();
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody() instanceof AuthResponse);
+
+        AuthResponse authResponse = (AuthResponse) response.getBody();
+        assertEquals("patient@test.com", authResponse.getUsername());
+
+        // Cleanup
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("Should return UNAUTHORIZED when not authenticated")
+    void checkAuthentication_WhenNotAuthenticated_ShouldReturnUnauthorized() {
+        // Arrange
+        SecurityContextHolder.clearContext(); // Ensure no authentication
+
+        // Act
+        ResponseEntity<?> response = authController.checkAuthentication();
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Not authenticated!", response.getBody());
+    }
 }
