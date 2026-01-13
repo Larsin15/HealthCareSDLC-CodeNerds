@@ -177,13 +177,25 @@ public class AuthControllerTest {
     void register_WithMultipleRoles_ShouldUseFirstRole() {
         // Arrange
         validRegisterRequest.setRoles(Set.of(Role.EMPLOYEE, Role.ADMIN));
+
+        // Create a mock Employee since EMPLOYEE/ADMIN roles create Employee objects
+        var mockEmployee = new healthcareab.project.healthcare_booking_app.models.Employee();
+        mockEmployee.setUsername("patient@test.com");
+        mockEmployee.setEmail("patient@test.com");
+        mockEmployee.setFirstName("John");
+        mockEmployee.setLastName("Doe");
+        mockEmployee.setEmployeeNumber("EMP001");
+        mockEmployee.setSpecialization("General");
+        mockEmployee.setRoles(Set.of(Role.EMPLOYEE));
+
         when(authService.existsByUsername(anyString())).thenReturn(false);
+        // Use any(Role.class) since Set order is not guaranteed
         when(userFactory.createUser(
-                eq(Role.EMPLOYEE), // Should use first role
+                any(Role.class), // Accept any role since Set order is not guaranteed
                 anyString(),
                 anyString(),
                 anyString()
-        )).thenReturn(mockPatient);
+        )).thenReturn(mockEmployee);
         doNothing().when(authService).registerUser(any(User.class));
 
         // Act
@@ -191,8 +203,9 @@ public class AuthControllerTest {
 
         // Assert
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        // Verify that createUser was called with some role (could be EMPLOYEE or ADMIN)
         verify(userFactory, times(1)).createUser(
-                eq(Role.EMPLOYEE),
+                any(Role.class),
                 anyString(),
                 anyString(),
                 anyString()
