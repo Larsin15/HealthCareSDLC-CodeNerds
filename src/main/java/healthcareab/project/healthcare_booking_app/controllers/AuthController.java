@@ -53,7 +53,7 @@ public class AuthController {
                 ? registerRequest.getRoles().iterator().next()
                 : Role.PATIENT;
 
-        User user = userFactory.createUser(
+                User user = userFactory.createUser(
                 role,
                 registerRequest.getUsername(),
                 registerRequest.getPassword(),

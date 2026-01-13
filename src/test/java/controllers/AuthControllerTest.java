@@ -198,4 +198,53 @@ public class AuthControllerTest {
                 anyString()
         );
     }
+
+
+
+    //Edge cases
+    @Test
+    @DisplayName("Should handle employee registration correctly")
+    void register_WithEmployeeRequest_ShouldSetEmployeeFields() {
+        // Arrange
+        RegisterRequest employeeRequest = new RegisterRequest();
+        employeeRequest.setUsername("employee@test.com");
+        employeeRequest.setPassword("SecurePass123!");
+        employeeRequest.setEmail("employee@test.com");
+        employeeRequest.setFirstName("Jane");
+        employeeRequest.setLastName("Smith");
+        employeeRequest.setEmployeeNumber("EMP001");
+        employeeRequest.setSpecialization("Cardiology");
+        employeeRequest.setDepartment("Heart Clinic");
+        employeeRequest.setRoles(Set.of(Role.EMPLOYEE));
+
+        var mockEmployee = new healthcareab.project.healthcare_booking_app.models.Employee();
+        mockEmployee.setUsername("employee@test.com");
+        mockEmployee.setEmail("employee@test.com");
+        mockEmployee.setFirstName("Jane");
+        mockEmployee.setLastName("Smith");
+        mockEmployee.setEmployeeNumber("EMP001");
+        mockEmployee.setSpecialization("Cardiology");
+        mockEmployee.setDepartment("Heart Clinic");
+        mockEmployee.setRoles(Set.of(Role.EMPLOYEE));
+
+        when(authService.existsByUsername(anyString())).thenReturn(false);
+        when(userFactory.createUser(any(), anyString(), anyString(), anyString()))
+                .thenReturn(mockEmployee);
+        doNothing().when(authService).registerUser(any(User.class));
+
+        // Act
+        ResponseEntity<?> response = authController.register(employeeRequest);
+
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(authService).registerUser(argThat(user ->
+                user instanceof healthcareab.project.healthcare_booking_app.models.Employee &&
+                        ((healthcareab.project.healthcare_booking_app.models.Employee) user)
+                                .getEmployeeNumber().equals("EMP001")
+        ));
+    }
+
+
+
+
 }
