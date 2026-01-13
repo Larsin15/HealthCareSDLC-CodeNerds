@@ -55,6 +55,7 @@ public class AuthServiceTest {
     @DisplayName("Should successfully register a new patient")
     void registerUser_WithValidPatient_ShouldSaveUser() {
         //Arrange
+        String originalPassword = testPatient.getPassword();
         String encodedPassword = "$2a$10$encodedPasswordHash";
         when(passwordEncoder.encode(testPatient.getPassword())).thenReturn(encodedPassword);
         when(userRepository.save(any(User.class))).thenReturn(testPatient);
@@ -65,7 +66,7 @@ public class AuthServiceTest {
         //Assert
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository, times(1)).save(userCaptor.capture());
-        verify(passwordEncoder, times(1)).encode(testPatient.getPassword());
+        verify(passwordEncoder, times(1)).encode(originalPassword);
 
         User savedUser = userCaptor.getValue();
         assertEquals(encodedPassword, savedUser.getPassword(), "Password should be encoded");
