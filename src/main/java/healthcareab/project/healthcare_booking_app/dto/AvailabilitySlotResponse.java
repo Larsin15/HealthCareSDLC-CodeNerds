@@ -31,5 +31,23 @@ public class AvailabilitySlotResponse {
         this.endTime = slot.getEndTime();
         this.status = slot.getStatus();
     }
+
+    public AvailabilitySlotResponse( // Full constructor for manual testing creation
+            UUID id,
+            UUID employeeId,
+            String employeeName,
+            String employeeSpecialization,
+            ZonedDateTime startTime,
+            ZonedDateTime endTime,
+            SlotStatus status
+    ) {
+        this.id = id;
+        this.employeeId = employeeId;
+        this.employeeName = employeeName;
+        this.employeeSpecialization = employeeSpecialization;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.status = status;
+    }
 }
 
