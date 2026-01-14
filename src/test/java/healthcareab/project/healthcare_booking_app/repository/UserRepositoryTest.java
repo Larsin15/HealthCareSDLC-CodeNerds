@@ -2,7 +2,6 @@ package healthcareab.project.healthcare_booking_app.repository;
 
 import healthcareab.project.healthcare_booking_app.models.Patient;
 import healthcareab.project.healthcare_booking_app.models.User;
-import healthcareab.project.healthcare_booking_app.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +53,26 @@ public class UserRepositoryTest {
 
         // Assert
         assertThat(found).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should find user by username when user exists")
+    void findByUsername_WhenUserExists_ReturnsUser() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("John");
+        patient.setLastName("Doe");
+        patient.setEmail("John.Doe@Test.com");
+        patient.setUsername("JohnDoe");
+        patient.setPassword("Password123#");
+        patient.setPhoneNumber("1234567890");
+        entityManager.persistAndFlush(patient);
+
+        // Act
+        Optional<User> found = userRepository.findByUsername("JohnDoe");
+
+        // Assert
+        assertThat(found).isPresent();
+        assertThat(found.get().getUsername()).isEqualTo("JohnDoe");
     }
 }
