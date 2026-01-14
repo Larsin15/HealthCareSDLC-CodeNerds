@@ -1,11 +1,13 @@
 package healthcareab.project.healthcare_booking_app.repository;
 
 import healthcareab.project.healthcare_booking_app.models.Employee;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -65,6 +67,7 @@ public class EmployeeRepositoryTest {
         employee.setEmail("carol.williams@example.com");
         employee.setUsername("CarolWilliams");
         employee.setPassword("Password789!");
+        employee.setEmployeeNumber("EMP02");
 
         // Act
         Employee savedEmployee = employeeRepository.save(employee);
@@ -95,5 +98,65 @@ public class EmployeeRepositoryTest {
         // Assert
         Optional<Employee> found = employeeRepository.findById(employee.getId());
         assertThat(found).isEmpty();
+    }
+
+    // Edge cases
+
+    @Test
+    @DisplayName("Should throw exception when ID is null")
+    void findById_WhenIdIsNull_ThrowsException() {
+        // Act & Assert
+        Assertions.assertThrows(
+                InvalidDataAccessApiUsageException.class,
+                () -> employeeRepository.findById(null)
+        );
+    }
+
+    @Test
+    @DisplayName("Should update existing employee details")
+    void update_ExistingEmployee_UpdatesDetails() {
+        // Arrange
+        Employee employee = new Employee();
+        employee.setFirstName("Eve");
+        employee.setLastName("Davis");
+        employee.setEmail("eve.davis@example");
+        employee.setUsername("EveDavis");
+        employee.setPassword("InitPass123!");
+        employee.setEmployeeNumber("EMP02");
+        Employee savedEmployee = entityManager.persistAndFlush(employee);
+        entityManager.clear();
+
+        // Act
+        employee.setEmail("eve.davis@example.com");
+        Employee updatedEmployee = employeeRepository.save(employee);
+        entityManager.flush();
+
+        // Assert
+        Optional<Employee> found = employeeRepository.findById(savedEmployee.getId());
+        assertThat(found).isPresent();
+        assertThat(found.get().getEmail()).isEqualTo("eve.davis@example.com");
+    }
+
+    @Test
+    @DisplayName("Should handle special characters in employee number")
+    void save_EmployeeWithSpecialCharactersInEmployeeNumber_SavesSuccessfully() {
+        // Arrange
+        Employee employee = new Employee();
+        employee.setFirstName("Frank");
+        employee.setLastName("Miller");
+        employee.setEmail("frank.miller@example.com");
+        employee.setUsername("FrankMiller");
+        employee.setPassword("Password123!");
+        employee.setEmployeeNumber("EMP0$");
+
+        // Act
+        Employee savedEmployee = employeeRepository.save(employee);
+        entityManager.flush();
+
+        // Assert
+        Optional<Employee> found = employeeRepository.findById(savedEmployee.getId());
+        assertThat(found).isPresent();
+        assertThat(found.get().getEmployeeNumber()).isEqualTo("EMP0$");
+        assertThat(found.get().getFirstName()).isEqualTo("Frank");
     }
 }
