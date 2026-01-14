@@ -21,6 +21,7 @@ public class PatientRepositoryTest {
     @Autowired
     private PatientRepository patientRepository;
 
+    // Basic functionality tests
     @Test
     @DisplayName("Should find patient by id when patient exists")
     void findById_WhenPatientExists_ReturnsPatient() {
@@ -94,5 +95,65 @@ public class PatientRepositoryTest {
         // Assert
         Optional<Patient> found = patientRepository.findById(patient.getId());
         assertThat(found).isEmpty();
+    }
+
+    // Edge cases
+
+    @Test
+    @DisplayName("Should throw exception when ID is null")
+    void findById_WhenIdIsNull_ThrowsException() {
+        // Act
+        org.junit.jupiter.api.Assertions.assertThrows(
+                org.springframework.dao.InvalidDataAccessApiUsageException.class,
+                () -> patientRepository.findById(null)
+        );
+    }
+
+    @Test
+    @DisplayName("Should update existing patient details")
+    void update_ExistingPatient_UpdatesDetails() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("David");
+        patient.setLastName("Wilson");
+        patient.setEmail("david.wilson@example");
+        patient.setUsername("DavidWilson");
+        patient.setPassword("InitPass123!");
+        patient.setPhoneNumber("6677889900");
+        Patient savedPatient = entityManager.persistAndFlush(patient);
+        entityManager.clear();
+
+        // Act
+        patient.setEmail("david.wilson@example.com");
+        Patient updatedPatient = patientRepository.save(patient);
+        entityManager.flush();
+
+        // Assert
+        Optional<Patient> found = patientRepository.findById(updatedPatient.getId());
+        assertThat(found).isPresent();
+        assertThat(found.get().getEmail()).isEqualTo("david.wilson@example.com");
+    }
+
+    @Test
+    @DisplayName("Should handle special characters in patient details")
+    void save_PatientWithSpecialCharacters_SavesSuccessfully() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("Elise");
+        patient.setLastName("Connor");
+        patient.setEmail("elise.connor@example.com");
+        patient.setUsername("Elise@Connor!");
+        patient.setPassword("Spec!alPass123");
+        patient.setPhoneNumber("2233445566");
+
+        // Act
+        Patient savedPatient = patientRepository.save(patient);
+        entityManager.flush();
+
+        // Assert
+        Optional<Patient> found = patientRepository.findById(savedPatient.getId());
+        assertThat(found).isPresent();
+        assertThat(found.get().getUsername()).isEqualTo("Elise@Connor!");
+        assertThat(found.get().getLastName()).isEqualTo("Connor");
     }
 }
