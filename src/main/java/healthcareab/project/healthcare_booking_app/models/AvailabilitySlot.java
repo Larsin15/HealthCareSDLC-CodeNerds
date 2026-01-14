@@ -79,4 +79,81 @@ public class AvailabilitySlot {
     public long getDurationMinutes() { // Duration in minutes (should always be 30)
         return java.time.Duration.between(startTime, endTime).toMinutes();
     }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public ZonedDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(ZonedDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public ZonedDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(ZonedDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public SlotStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SlotStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    /**
+     * Two slots are equal if they have the same ID
+     * Important for JPA entity management and collections
+     */
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AvailabilitySlot)) {
+            return false;
+        }
+        AvailabilitySlot that = (AvailabilitySlot) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "AvailabilitySlot{" +
+                "id=" + id +
+                ", employee=" + (employee != null ? employee.getUsername() : "null") +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", status=" + status +
+                '}';
+    }
 }
