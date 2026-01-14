@@ -69,7 +69,10 @@ public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySl
             "WHERE s.employee = :employee " +
             "AND s.startTime < :endTime " +
             "AND s.endTime > :startTime " +
-            "AND s.status IN ('AVAILABLE','BOOKED')")
+            "AND s.status IN (" +
+            "  healthcareab.project.healthcare_booking_app.models.SlotStatus.AVAILABLE, " +
+            "  healthcareab.project.healthcare_booking_app.models.SlotStatus.BOOKED" +
+            ")")
     List<AvailabilitySlot> findOverlappingSlots(
             @Param("employee") Employee employee,
             @Param("startTime") ZonedDateTime startTime,
