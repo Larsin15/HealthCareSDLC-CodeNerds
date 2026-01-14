@@ -75,4 +75,17 @@ public class UserRepositoryTest {
         assertThat(found).isPresent();
         assertThat(found.get().getUsername()).isEqualTo("JohnDoe");
     }
+
+    @Test
+    @DisplayName("Should return empty when user not found by username")
+    void findByUsername_WhenUserNotFound_ReturnsEmpty() {
+        // Arrange
+        // No user is added to the test database
+
+        // Act
+        Optional<User> found = userRepository.findByUsername("NonExistentUser");
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
 }
