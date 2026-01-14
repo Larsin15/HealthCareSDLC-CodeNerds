@@ -50,4 +50,15 @@ public class AvailabilitySlot {
         this.endTime = endTime;
         this.status = SlotStatus.AVAILABLE;
     }
+
+    @PrePersist
+    protected void onCreate() { // Sets creation and update timestamps
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() { // Updates the modification timestamp
+        updatedAt = LocalDateTime.now();
+    }
 }
