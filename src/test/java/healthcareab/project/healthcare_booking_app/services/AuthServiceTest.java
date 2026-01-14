@@ -1,4 +1,4 @@
-package services;
+package healthcareab.project.healthcare_booking_app.services;
 
 import healthcareab.project.healthcare_booking_app.models.Employee;
 import healthcareab.project.healthcare_booking_app.models.Patient;
