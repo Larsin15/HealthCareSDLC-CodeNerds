@@ -156,4 +156,69 @@ public class PatientRepositoryTest {
         assertThat(found.get().getUsername()).isEqualTo("Elise@Connor!");
         assertThat(found.get().getLastName()).isEqualTo("Connor");
     }
+
+    // Custom queries
+    @Test
+    @DisplayName("Should find patient by date of birth when patient exists")
+    void findByDateOfBirth_WhenPatientExists_ReturnsPatient() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("Fiona");
+        patient.setLastName("Garcia");
+        patient.setEmail("fiona.garca@example.com");
+        patient.setUsername("FionaGarcia");
+        patient.setPassword("DOBPass123!");
+        patient.setPhoneNumber("3344556677");
+        patient.setDateOfBirth(java.time.LocalDate.of(1990, 5, 15));
+        entityManager.persistAndFlush(patient);
+
+        // Act
+        Optional<Patient> found = patientRepository.findByDateOfBirth(java.time.LocalDate.of(1990, 5, 15));
+
+        // Assert
+        assertThat(found).isPresent();
+        assertThat(found.get().getFirstName()).isEqualTo("Fiona");
+        assertThat(found.get().getDateOfBirth()).isEqualTo(java.time.LocalDate.of(1990, 5, 15));
+    }
+
+    @Test
+    @DisplayName("Should return empty when patient not found by date of birth")
+    void findByDateOfBirth_WhenPatientNotFound_ReturnsEmpty() {
+        // Act
+        Optional<Patient> found = patientRepository.findByDateOfBirth(java.time.LocalDate.of(2000, 1, 1));
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return true when patient exists by date of birth")
+    void existsByDateOfBirth_WhenPatientExists_ReturnsTrue() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("George");
+        patient.setLastName("Harris");
+        patient.setEmail("george.harris@example.com");
+        patient.setUsername("GeorgeHarris");
+        patient.setPassword("ExistPass123!");
+        patient.setPhoneNumber("4455667788");
+        patient.setDateOfBirth(java.time.LocalDate.of(1985, 8, 20));
+        entityManager.persistAndFlush(patient);
+
+        // Act
+        boolean exists = patientRepository.existsByDateOfBirth(java.time.LocalDate.of(1985, 8, 20));
+
+        // Assert
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should return false when patient does not exist by date of birth")
+    void existsByDateOfBirth_WhenPatientNotExists_ReturnsFalse() {
+        // Act
+        boolean exists = patientRepository.existsByDateOfBirth(java.time.LocalDate.of(1995, 12, 25));
+
+        // Assert
+        assertThat(exists).isFalse();
+    }
 }
