@@ -159,4 +159,201 @@ public class EmployeeRepositoryTest {
         assertThat(found.get().getEmployeeNumber()).isEqualTo("EMP0$");
         assertThat(found.get().getFirstName()).isEqualTo("Frank");
     }
+
+    // Custom Query tests
+
+    @Test
+    @DisplayName("Should find employee by employee number when employee exists")
+    void findByEmployeeNumber_WhenEmployeeExists_ReturnsEmployee() {
+        // Arrange
+        Employee employee = new Employee();
+        employee.setFirstName("Grace");
+        employee.setLastName("Lee");
+        employee.setEmail("grace.lee@example.com");
+        employee.setUsername("GraceLee");
+        employee.setPassword("Pass456!");
+        employee.setEmployeeNumber("EMP03");
+        entityManager.persistAndFlush(employee);
+
+        // Act
+        Optional<Employee> found = employeeRepository.findByEmployeeNumber("EMP03");
+
+        // Assert
+        assertThat(found).isPresent();
+        assertThat(found.get().getEmployeeNumber()).isEqualTo("EMP03");
+    }
+
+    @Test
+    @DisplayName("Should return true when employee exists by employee number")
+    void existsByEmployeeNumber_WhenEmployeeExists_ReturnsTrue() {
+        // Arrange
+        Employee employee = new Employee();
+        employee.setFirstName("Hank");
+        employee.setLastName("Wilson");
+        employee.setEmail("hank.wilson@example.com");
+        employee.setUsername("HankWilson");
+        employee.setPassword("Pass789!");
+        employee.setEmployeeNumber("EMP04");
+        entityManager.persistAndFlush(employee);
+
+        // Act
+        boolean exists = employeeRepository.existsByEmployeeNumber("EMP04");
+
+        // Assert
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should return false when employee does not exist by employee number")
+    void existsByEmployeeNumber_WhenEmployeeNotExists_ReturnsFalse() {
+        // Act
+        boolean exists = employeeRepository.existsByEmployeeNumber("NONEXISTENT");
+
+        // Assert
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should find employees by specialization")
+    void findBySpecialization_WhenEmployeesExist_ReturnsEmployees() {
+        // Arrange
+        Employee emp1 = new Employee();
+        emp1.setFirstName("Ivy");
+        emp1.setLastName("Taylor");
+        emp1.setEmail("ivy.taylor@example.com");
+        emp1.setUsername("IvyTaylor");
+        emp1.setPassword("SpecPass123!");
+        emp1.setEmployeeNumber("EMP05");
+        emp1.setSpecialization("Cardiology");
+        entityManager.persistAndFlush(emp1);
+
+        Employee emp2 = new Employee();
+        emp2.setFirstName("Jack");
+        emp2.setLastName("Anderson");
+        emp2.setEmail("jack.anderson@example.com");
+        emp2.setUsername("JackAnderson");
+        emp2.setPassword("SpecPass456!");
+        emp2.setEmployeeNumber("EMP06");
+        emp2.setSpecialization("Cardiology");
+        entityManager.persistAndFlush(emp2);
+
+        // Act
+        var foundEmployees = employeeRepository.findBySpecialization("Cardiology");
+
+        // Assert
+        assertThat(foundEmployees).isNotNull();
+        assertThat(foundEmployees.size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Should find employees by department")
+    void findByDepartment_WhenEmployeesExist_ReturnsEmployees() {
+        // Arrange
+        Employee emp1 = new Employee();
+        emp1.setFirstName("Karen");
+        emp1.setLastName("Thomas");
+        emp1.setEmail("karen.thomas@example.com");
+        emp1.setUsername("KarenThomas");
+        emp1.setPassword("DeptPass123!");
+        emp1.setEmployeeNumber("EMP07");
+        emp1.setDepartment("Radiology");
+        entityManager.persistAndFlush(emp1);
+
+        Employee emp2 = new Employee();
+        emp2.setFirstName("Leo");
+        emp2.setLastName("Moore");
+        emp2.setEmail("leo.moore@example.com");
+        emp2.setUsername("LeoMoore");
+        emp2.setPassword("DeptPass456!");
+        emp2.setEmployeeNumber("EMP08");
+        emp2.setDepartment("Radiology");
+        entityManager.persistAndFlush(emp2);
+
+        // Act
+        var foundEmployees = employeeRepository.findByDepartment("Radiology");
+
+        // Assert
+        assertThat(foundEmployees).isNotNull();
+        assertThat(foundEmployees.size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Should find all available employees")
+    void findByAvailableTrue_WhenEmployeesExist_ReturnsAvailableEmployees() {
+        // Arrange
+        Employee emp1 = new Employee();
+        emp1.setFirstName("Mia");
+        emp1.setLastName("Jackson");
+        emp1.setEmail("mia.jackson@example.com");
+        emp1.setUsername("MiaJackson");
+        emp1.setPassword("AvailPass123!");
+        emp1.setEmployeeNumber("EMP09");
+        emp1.setAvailableForBooking(true);
+        entityManager.persistAndFlush(emp1);
+
+        Employee emp2 = new Employee();
+        emp2.setFirstName("Noah");
+        emp2.setLastName("White");
+        emp2.setEmail("noah.white@example.com");
+        emp2.setUsername("NoahWhite");
+        emp2.setPassword("AvailPass456!");
+        emp2.setEmployeeNumber("EMP10");
+        emp2.setAvailableForBooking(false);
+        entityManager.persistAndFlush(emp2);
+
+        // Act
+        var foundEmployees = employeeRepository.findAllAvailableEmployees();
+
+        // Assert
+        assertThat(foundEmployees).isNotNull();
+        assertThat(foundEmployees.size()).isEqualTo(1);
+        assertThat(foundEmployees.get(0).getFirstName()).isEqualTo("Mia");
+    }
+
+    @Test
+    @DisplayName("Should find available employees by specialization")
+    void findByAvailableTrueAndSpecialization_WhenEmployeesExist_ReturnsAvailableEmployeesBySpecialization() {
+        // Arrange
+        Employee emp1 = new Employee();
+        emp1.setFirstName("Olivia");
+        emp1.setLastName("Harris");
+        emp1.setEmail("olivia.harris@example.com");
+        emp1.setUsername("OliviaHarris");
+        emp1.setPassword("AvailSpecPass123!");
+        emp1.setEmployeeNumber("EMP11");
+        emp1.setAvailableForBooking(true);
+        emp1.setSpecialization("Dermatology");
+        entityManager.persistAndFlush(emp1);
+
+        Employee emp2 = new Employee();
+        emp2.setFirstName("Paul");
+        emp2.setLastName("Martin");
+        emp2.setEmail("paul.martin@example.com");
+        emp2.setUsername("PaulMartin");
+        emp2.setPassword("AvailSpecPass456!");
+        emp2.setEmployeeNumber("EMP12");
+        emp2.setAvailableForBooking(true);
+        emp2.setSpecialization("Dermatology");
+        entityManager.persistAndFlush(emp2);
+
+        Employee emp3 = new Employee();
+        emp3.setFirstName("Quinn");
+        emp3.setLastName("Thompson");
+        emp3.setEmail("quinn.thompson@example.com");
+        emp3.setUsername("QuinnThompson");
+        emp3.setPassword("AvailSpecPass789!");
+        emp3.setEmployeeNumber("EMP13");
+        emp3.setAvailableForBooking(false);
+        emp3.setSpecialization("Dermatology");
+        entityManager.persistAndFlush(emp3);
+
+        // Act
+        var foundEmployees = employeeRepository.findAvailableEmployeesBySpecialization("Dermatology");
+
+        // Assert
+        assertThat(foundEmployees).isNotNull();
+        assertThat(foundEmployees.size()).isEqualTo(2);
+        assertThat(foundEmployees.get(0).getFirstName()).isEqualTo("Olivia");
+        assertThat(foundEmployees.get(1).getFirstName()).isEqualTo("Paul");
+    }
 }
