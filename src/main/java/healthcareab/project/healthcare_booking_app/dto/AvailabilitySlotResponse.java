@@ -3,6 +3,9 @@ package healthcareab.project.healthcare_booking_app.dto;
 import healthcareab.project.healthcare_booking_app.models.AvailabilitySlot;
 import healthcareab.project.healthcare_booking_app.models.SlotStatus;
 
+import java.time.ZonedDateTime;
+import java.util.UUID;
+
 public class AvailabilitySlotResponse {
 
     private UUID id;
@@ -47,6 +50,62 @@ public class AvailabilitySlotResponse {
         this.employeeSpecialization = employeeSpecialization;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.status = status;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(UUID employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
+    }
+
+    public String getEmployeeSpecialization() {
+        return employeeSpecialization;
+    }
+
+    public void setEmployeeSpecialization(String employeeSpecialization) {
+        this.employeeSpecialization = employeeSpecialization;
+    }
+
+    public ZonedDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(ZonedDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public ZonedDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(ZonedDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public SlotStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SlotStatus status) {
         this.status = status;
     }
 }
