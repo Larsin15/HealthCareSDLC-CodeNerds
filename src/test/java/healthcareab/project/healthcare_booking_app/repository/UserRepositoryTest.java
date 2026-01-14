@@ -118,4 +118,77 @@ public class UserRepositoryTest {
         // Assert
         assertThat(found).isEmpty();
     }
+
+    @Test
+    @DisplayName("Should handle empty username gracefully")
+    void findByUsername_WhenUsernameIsEmpty_ReturnsEmpty() {
+        // Act
+        Optional<User> found = userRepository.findByUsername("");
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should be case sensitive when finding by email")
+    void findByEmail_CaseSensitivity() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("Jane");
+        patient.setLastName("Smith");
+        patient.setEmail("jane.smith@test.com");
+        patient.setUsername("JaneSmith");
+        patient.setPassword("Password123#");
+        patient.setPhoneNumber("0987654321");
+        entityManager.persistAndFlush(patient);
+
+        // Act
+        Optional<User> foundLowerCase = userRepository.findByEmail("jane.smith@test");
+        Optional<User> foundExactCase = userRepository.findByEmail("jane.smith@test.com");
+
+        // Assert
+        assertThat(foundLowerCase).isEmpty();
+        assertThat(foundExactCase).isPresent();
+    }
+
+    @Test
+    @DisplayName("Should handle special characters in username")
+    void findByUsername_SpecialCharacters() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("Alice");
+        patient.setLastName("Wonder");
+        patient.setEmail("alice.wonder@example.com");
+        patient.setUsername("Alice@Wonder!");
+        patient.setPassword("Password123#");
+        patient.setPhoneNumber("1122334455");
+        entityManager.persistAndFlush(patient);
+
+        // Act
+        Optional<User> found = userRepository.findByUsername("Alice@Wonder!");
+
+        // Assert
+        assertThat(found).isPresent();
+        assertThat(found.get().getUsername()).isEqualTo("Alice@Wonder!");
+    }
+
+    @Test
+    @DisplayName("Should handle whitespace in search queries")
+    void findByUsername_WithTrailingWhitespace_ReturnsEmpty() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setFirstName("Bob");
+        patient.setLastName("Builder");
+        patient.setEmail("bob.builder@example.com");
+        patient.setUsername("BobBuilder");
+        patient.setPassword("Password123#");
+        patient.setPhoneNumber("6677889900");
+        entityManager.persistAndFlush(patient);
+
+        // Act
+        Optional<User> found = userRepository.findByUsername("BobBuilder ");
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
 }
