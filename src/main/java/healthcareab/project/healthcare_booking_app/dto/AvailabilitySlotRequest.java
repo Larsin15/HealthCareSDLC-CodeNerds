@@ -12,4 +12,11 @@ public class AvailabilitySlotRequest {
     @NotNull(message = "End time is required")
     private ZonedDateTime endTime;
 
+    public AvailabilitySlotRequest() {
+    }
+
+    public AvailabilitySlotRequest(ZonedDateTime startTime, ZonedDateTime endTime) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }
