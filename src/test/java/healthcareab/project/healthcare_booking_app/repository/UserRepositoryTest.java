@@ -27,16 +27,32 @@ public class UserRepositoryTest {
     void findByEmail_WhenUserExists_ReturnsUser() {
         // Arrange
         Patient patient = new Patient();
-        patient.setEmail("test@test.com");
-        patient.setUsername("Test User");
+        patient.setFirstName("John");
+        patient.setLastName("Doe");
+        patient.setEmail("John.Doe@test.com");
+        patient.setUsername("JohnDoe");
         patient.setPassword("Password123#");
+        patient.setPhoneNumber("1234567890");
         entityManager.persistAndFlush(patient);
 
         // Act
-        Optional<User> found = userRepository.findByEmail("test@test.com");
+        Optional<User> found = userRepository.findByEmail("John.Doe@test.com");
 
         // Assert
         assertThat(found).isPresent();
-        assertThat(found.get().getEmail()).isEqualTo("test@test.com");
-        }
+        assertThat(found.get().getEmail()).isEqualTo("John.Doe@test.com");
+    }
+
+    @Test
+    @DisplayName("Should return empty when user not found by email")
+    void findByEmail_WhenUserNotFound_ReturnsEmpty() {
+        // Arrange
+        // No user is added to the test database
+
+        // Act
+        Optional<User> found = userRepository.findByEmail("nonexistent@test.com");
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
 }
