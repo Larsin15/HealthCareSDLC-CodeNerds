@@ -88,4 +88,34 @@ public class UserRepositoryTest {
         // Assert
         assertThat(found).isEmpty();
     }
+
+    @Test
+    @DisplayName("Should handle null email gracefully")
+    void findByEmail_WhenEmailIsNull_ReturnsEmpty() {
+        // Act
+        Optional<User> found = userRepository.findByEmail(null);
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should handle null username gracefully")
+    void findByUsername_WhenUsernameIsNull_ReturnsEmpty() {
+        // Act
+        Optional<User> found = userRepository.findByUsername(null);
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should handle empty email gracefully")
+    void findByEmail_WhenEmailIsEmpty_ReturnsEmpty() {
+        // Act
+        Optional<User> found = userRepository.findByEmail("");
+
+        // Assert
+        assertThat(found).isEmpty();
+    }
 }
