@@ -61,4 +61,22 @@ public class AvailabilitySlot {
     protected void onUpdate() { // Updates the modification timestamp
         updatedAt = LocalDateTime.now();
     }
+
+    public boolean isAvailableForBooking() {
+        return status == SlotStatus.AVAILABLE
+                && employee != null
+                && employee.canAcceptBookings();
+    }
+
+    public boolean canBeCancelled() {
+        return status == SlotStatus.AVAILABLE || status == SlotStatus.BOOKED; //true if status is AVAILABLE or BOOKED (not already cancelled/completed)
+    }
+
+    public boolean isInPast() { //Checks if this slot is in the past
+        return endTime.isBefore(ZonedDateTime.now());
+    }
+
+    public long getDurationMinutes() { // Duration in minutes (should always be 30)
+        return java.time.Duration.between(startTime, endTime).toMinutes();
+    }
 }
