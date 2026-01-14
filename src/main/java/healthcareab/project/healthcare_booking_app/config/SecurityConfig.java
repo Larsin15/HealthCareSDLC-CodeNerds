@@ -47,7 +47,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // define URL based rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        // Public endpoints
+                        .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        // Authenticated endpoints
+                        .requestMatchers("/auth/logout", "/auth/profile").authenticated()
                         // any other requests the user need to be logged
                         .anyRequest().authenticated()
                 )
