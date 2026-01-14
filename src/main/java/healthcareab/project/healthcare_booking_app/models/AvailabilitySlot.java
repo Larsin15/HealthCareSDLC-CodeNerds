@@ -40,4 +40,14 @@ public class AvailabilitySlot {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public AvailabilitySlot() {
+    }
+
+    public AvailabilitySlot(Employee employee, ZonedDateTime startTime, ZonedDateTime endTime) {
+        this.employee = employee;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.status = SlotStatus.AVAILABLE;
+    }
 }
