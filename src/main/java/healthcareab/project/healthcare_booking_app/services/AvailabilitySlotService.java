@@ -1,5 +1,10 @@
 package healthcareab.project.healthcare_booking_app.services;
 
+import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotRequest;
+import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotResponse;
+import healthcareab.project.healthcare_booking_app.models.Employee;
+import healthcareab.project.healthcare_booking_app.models.Role;
+import healthcareab.project.healthcare_booking_app.models.User;
 import healthcareab.project.healthcare_booking_app.repository.AvailabilitySlotRepository;
 import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -22,5 +27,23 @@ public class AvailabilitySlotService {
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.employeeRepository = employeeRepository;
         this.authService = authService;
+    }
+
+    //-------Validation methods--------
+    private Employee validateAndGetEmployee(User user) {
+        if (!(user instanceof Employee)) {
+            throw new IllegalArgumentException("Only employees can manage availability slots");
+        }
+
+        Employee employee = (Employee) user;
+
+        if(!employee.getRoles().contains(Role.EMPLOYEE)){
+            throw new IllegalArgumentException("User must have EMPLOYEE role");
+        }
+
+        if(!employee.isAvailableForBooking()){
+            throw new IllegalArgumentException("Employee is not available for booking");
+        }
+        return employee;
     }
 }
