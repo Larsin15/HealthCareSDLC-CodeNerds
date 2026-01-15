@@ -2,9 +2,7 @@ package healthcareab.project.healthcare_booking_app.services;
 
 import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotRequest;
 import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotResponse;
-import healthcareab.project.healthcare_booking_app.models.Employee;
-import healthcareab.project.healthcare_booking_app.models.Role;
-import healthcareab.project.healthcare_booking_app.models.User;
+import healthcareab.project.healthcare_booking_app.models.*;
 import healthcareab.project.healthcare_booking_app.repository.AvailabilitySlotRepository;
 import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -14,6 +12,10 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -43,11 +45,11 @@ public class AvailabilitySlotService {
 
         Employee employee = (Employee) user;
 
-        if(!employee.getRoles().contains(Role.EMPLOYEE)){
+        if (!employee.getRoles().contains(Role.EMPLOYEE)) {
             throw new IllegalArgumentException("User must have EMPLOYEE role");
         }
 
-        if(!employee.isAvailableForBooking()){
+        if (!employee.isAvailableForBooking()) {
             throw new IllegalArgumentException("Employee is not available for booking");
         }
         return employee;
@@ -58,13 +60,13 @@ public class AvailabilitySlotService {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
 
         //Future only
-        if(starTime.isBefore(now)) {
+        if (starTime.isBefore(now)) {
             throw new IllegalArgumentException("Can not create slots in the past");
         }
 
         //weekdays validation
         DayOfWeek dayOfWeek = starTime.getDayOfWeek();
-        if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY){
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             throw new IllegalArgumentException("Slots can only be created on weekdays (Monday - Friday)");
         }
         //Working hours validation (8-16)
@@ -74,7 +76,7 @@ public class AvailabilitySlotService {
         int endMinute = endTime.getMinute();
 
         //Start time must be on the hour of half-hour
-        if(startMinute != 0 && endMinute != 30){
+        if (startMinute != 0 && endMinute != 30) {
             throw new IllegalArgumentException(
                     String.format("Slots must be within working hours (%02d:00-%02d:00)", WORKING_HOUR_START, WORKING_HOUR_END)
             );
@@ -102,7 +104,34 @@ public class AvailabilitySlotService {
         if (durationMinutes != SLOT_DURATION_MINUTES) {
             throw new IllegalArgumentException(String.format("Slot duration must be exactly %d minutes", SLOT_DURATION_MINUTES));
         }
-
-
     }
+
+    //Validate that the new slot does not overlap with existing slots.
+    private void validateNoOverlap(Employee employee, ZonedDateTime startTime, ZonedDateTime endTime, UUID excludeSlotId) {
+
+        //Check for overlaping slots for better error messages
+        boolean hasOverlap = availabilitySlotRepository.hasOverlappingSlot(
+                employee, startTime, endTime, Arrays.asList(SlotStatus.CANCELLED));
+        if (hasOverlap) {
+            // Get overlapping slots for better error message
+            List<AvailabilitySlot> overlappingSlots = availabilitySlotRepository.findOverlappingSlots(
+                    employee, startTime, endTime);
+
+            // Filter out the slot being updated
+            if (excludeSlotId != null) {
+                overlappingSlots = overlappingSlots.stream()
+                        .filter(slot -> !slot.getId().equals(excludeSlotId))
+                        .collect(Collectors.toList());
+            }
+
+            if (!overlappingSlots.isEmpty()) {
+                AvailabilitySlot conflict = overlappingSlots.get(0);
+                throw new IllegalArgumentException(
+                        String.format("Slot overlaps with existing slot: %s to %s",
+                                conflict.getStartTime(), conflict.getEndTime()));
+            }
+        }
+    }
+
+    //---------Mapping methods-------------
 }
