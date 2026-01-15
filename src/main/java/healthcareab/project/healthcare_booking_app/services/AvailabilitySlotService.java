@@ -10,6 +10,11 @@ import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 @Service
 @Transactional
 public class AvailabilitySlotService {
@@ -30,6 +35,7 @@ public class AvailabilitySlotService {
     }
 
     //-------Validation methods--------
+    //Validate if the user is an employee
     private Employee validateAndGetEmployee(User user) {
         if (!(user instanceof Employee)) {
             throw new IllegalArgumentException("Only employees can manage availability slots");
@@ -45,5 +51,58 @@ public class AvailabilitySlotService {
             throw new IllegalArgumentException("Employee is not available for booking");
         }
         return employee;
+    }
+
+    //Validate slot times according to buisness rules.
+    private void validateSlotTimes(ZonedDateTime starTime, ZonedDateTime endTime) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+
+        //Future only
+        if(starTime.isBefore(now)) {
+            throw new IllegalArgumentException("Can not create slots in the past");
+        }
+
+        //weekdays validation
+        DayOfWeek dayOfWeek = starTime.getDayOfWeek();
+        if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY){
+            throw new IllegalArgumentException("Slots can only be created on weekdays (Monday - Friday)");
+        }
+        //Working hours validation (8-16)
+        int startHour = starTime.getHour();
+        int startMinute = starTime.getMinute();
+        int endHour = endTime.getHour();
+        int endMinute = endTime.getMinute();
+
+        //Start time must be on the hour of half-hour
+        if(startMinute != 0 && endMinute != 30){
+            throw new IllegalArgumentException(
+                    String.format("Slots must be within working hours (%02d:00-%02d:00)", WORKING_HOUR_START, WORKING_HOUR_END)
+            );
+        }
+        // Check working hours
+        if (startHour < WORKING_HOUR_START ||
+                (startHour == WORKING_HOUR_START && startMinute < 0) ||
+                startHour >= WORKING_HOUR_END ||
+                (startHour == WORKING_HOUR_END && startMinute > 0)) {
+            throw new IllegalArgumentException(
+                    String.format("Slots must be within working hours (%02d:00-%02d:00)",
+                            WORKING_HOUR_START, WORKING_HOUR_END));
+        }
+        // End time must be within working hours
+        if (endHour > WORKING_HOUR_END ||
+                (endHour == WORKING_HOUR_END && endMinute > 0)) {
+            throw new IllegalArgumentException(
+                    String.format("Slot end time must be within working hours (before %02d:00)",
+                            WORKING_HOUR_END));
+        }
+
+        //Duration validation (exactly 30 minutes)
+        Duration duration = Duration.between(starTime, endTime);
+        long durationMinutes = duration.toMinutes();
+        if (durationMinutes != SLOT_DURATION_MINUTES) {
+            throw new IllegalArgumentException(String.format("Slot duration must be exactly %d minutes", SLOT_DURATION_MINUTES));
+        }
+
+
     }
 }
