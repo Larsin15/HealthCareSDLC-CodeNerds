@@ -1,6 +1,5 @@
 package healthcareab.project.healthcare_booking_app.services;
 
-import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotResponse;
 import healthcareab.project.healthcare_booking_app.repository.AvailabilitySlotRepository;
 import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
