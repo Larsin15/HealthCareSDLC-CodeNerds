@@ -2,6 +2,8 @@ package healthcareab.project.healthcare_booking_app.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -31,6 +33,26 @@ public class Appointment {
     @JoinColumn(name = "employee_id", nullable = false)
     @NotNull(message = "Employee is required")
     private Employee employee;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AppointmentStatus status = AppointmentStatus.BOOKED;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    // constructor for JPA
+    public Appointment() {
+    }
 
 }
 
