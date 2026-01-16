@@ -5,7 +5,9 @@ import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotResponse;
 import healthcareab.project.healthcare_booking_app.models.User;
 import healthcareab.project.healthcare_booking_app.services.AuthService;
 import healthcareab.project.healthcare_booking_app.services.AvailabilitySlotService;
+import jakarta.persistence.PrePersist;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -44,6 +47,18 @@ public class AvailabilitySlotController {
     public ResponseEntity<List<AvailabilitySlotResponse>> getMySlots() {
         User currentUser = getCurrentUser();
         List<AvailabilitySlotResponse> slots = availabilitySlotService.getMySlots(currentUser);
+        return ResponseEntity.ok(slots);
+    }
+
+    //Get all available slots for patients/Employees/admins to see
+    @GetMapping("/available")
+    @PreAuthorize("hasAnyRole('PATIENT', 'EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<List<AvailabilitySlotResponse>> getAvailableSlots(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime start,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime end) {
+        List<AvailabilitySlotResponse> slots = availabilitySlotService.getAvailableSlots(start, end);
         return ResponseEntity.ok(slots);
     }
 
