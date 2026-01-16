@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/availability")
@@ -62,6 +63,19 @@ public class AvailabilitySlotController {
         return ResponseEntity.ok(slots);
     }
 
+    //Get available slots for a specific emoloyee
+    @GetMapping("/employee/{employeeId}")
+    @PreAuthorize("hasAnyRole('PATIENT', 'EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<List<AvailabilitySlotResponse>> getAvailableSlotsByEmployee(
+            @PathVariable UUID employeeId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime start,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime end) {
+        List<AvailabilitySlotResponse> slots = availabilitySlotService
+                .getAvailableSlotsByEmployee(employeeId, start, end);
+        return ResponseEntity.ok(slots);
+    }
 
 
 
