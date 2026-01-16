@@ -12,10 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/availability")
@@ -29,6 +28,7 @@ public class AvailabilitySlotController {
         this.authService = authService;
     }
 
+    //Create a new availability slot
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<AvailabilitySlotResponse> createSlot(
@@ -36,6 +36,15 @@ public class AvailabilitySlotController {
         User currentUser = getCurrentUser();
         AvailabilitySlotResponse response = availabilitySlotService.createSlot(request, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //Get all slots for the current user
+    @GetMapping("/my-slots")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<List<AvailabilitySlotResponse>> getMySlots() {
+        User currentUser = getCurrentUser();
+        List<AvailabilitySlotResponse> slots = availabilitySlotService.getMySlots(currentUser);
+        return ResponseEntity.ok(slots);
     }
 
 
