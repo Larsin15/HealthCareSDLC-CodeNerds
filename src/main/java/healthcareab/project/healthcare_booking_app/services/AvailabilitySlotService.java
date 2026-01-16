@@ -63,6 +63,23 @@ public class AvailabilitySlotService {
                 .collect(Collectors.toList());
     }
 
+    //Get all available slots for patients to see
+    @Transactional(readOnly = true)
+    public List<AvailabilitySlotResponse> getAvailableSlots(ZonedDateTime start, ZonedDateTime end) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+        ZonedDateTime startDate = (start != null) ? start : now;
+        ZonedDateTime endDate = (end != null) ? end : now.plusMonths(3); //Default 3 months ahead
+
+        List<AvailabilitySlot> slots = availabilitySlotRepository
+                .findByStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
+                        SlotStatus.AVAILABLE, startDate, endDate);
+
+        return slots.stream()
+                .filter(slot -> slot.getEmployee().isAvailableForBooking())
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
 
 
 
