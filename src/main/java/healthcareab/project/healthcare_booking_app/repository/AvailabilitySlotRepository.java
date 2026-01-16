@@ -18,7 +18,7 @@ public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySl
 
 
     //Find all slots for a specific employee
-    List<AvailabilitySlot> findEmployee (Employee employee);
+    List<AvailabilitySlot> findEByEmployee (Employee employee);
 
 
     //Find all slots with a specific status

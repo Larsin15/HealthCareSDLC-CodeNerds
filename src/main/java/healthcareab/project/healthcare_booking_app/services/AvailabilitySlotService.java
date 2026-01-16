@@ -53,6 +53,15 @@ public class AvailabilitySlotService {
         return mapToResponse(slot);
     }
 
+    //Get all slots for the current employee
+    @Transactional(readOnly = true)
+    public List<AvailabilitySlotResponse> getMySlots(User currentUser) {
+        Employee employee = validateAndGetEmployee(currentUser);
+        List<AvailabilitySlot> slots = availabilitySlotRepository.findEByEmployee(employee);
+        return slots.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
 
 
