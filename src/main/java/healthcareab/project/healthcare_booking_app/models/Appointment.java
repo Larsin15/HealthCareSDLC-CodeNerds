@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.Duration;
 import java.util.UUID;
 
 @Entity
@@ -71,6 +74,32 @@ public class Appointment {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Checks if this appointment can be cancelled by a patient.
+     * Patients can only cancel at least 24 hours before the appointment.
+     *
+     * @return true if the appointment can be cancelled by the patient
+     */
+    public boolean canBeCancelledByPatient() {
+        if (status != AppointmentStatus.BOOKED) {
+            return false;
+        }
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+        ZonedDateTime slotStart = availabilitySlot.getStartTime();
+        Duration timeUntilAppointment = Duration.between(now, slotStart);
+        return timeUntilAppointment.toHours() >= 24;
+    }
+
+    /**
+     * Checks if this appointment can be cancelled by an employee.
+     * Employees can cancel anytime as long as the appointment is still booked.
+     *
+     * @return true if the appointment can be cancelled by the employee
+     */
+    public boolean canBeCancelledByEmployee() {
+        return status == AppointmentStatus.BOOKED;
     }
 
 }
