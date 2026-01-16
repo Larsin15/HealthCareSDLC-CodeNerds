@@ -8,11 +8,7 @@ import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
+import java.time.*;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,6 +26,9 @@ public class AvailabilitySlotService {
     private static final int WORKING_HOUR_END = 16;
     private static final int SLOT_DURATION_MINUTES = 30;
 
+    //Swedish timezone
+    private static final ZoneId SWEDISH_TIMEZONE = ZoneId.of("Europe/Stockholm");
+
     public AvailabilitySlotService(AvailabilitySlotRepository availabilitySlotRepository, EmployeeRepository employeeRepository, AuthService authService) {
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.employeeRepository = employeeRepository;
@@ -41,12 +40,16 @@ public class AvailabilitySlotService {
         // Ensure user is an employee
         Employee employee = validateAndGetEmployee(currentUser);
 
+        //Normalize input times to swedish zone
+        ZonedDateTime startTime = request.getStartTime();
+        ZonedDateTime endTime = request.getEndTime();
+
         // Validate business rules
-        validateSlotTimes(request.getStartTime(), request.getEndTime());
-        validateNoOverlap(employee, request.getStartTime(), request.getEndTime(), null);
+        validateSlotTimes(startTime, endTime);
+        validateNoOverlap(employee, startTime, endTime, null);
 
         // Create and save slot
-        AvailabilitySlot slot = new AvailabilitySlot(employee, request.getStartTime(), request.getEndTime());
+        AvailabilitySlot slot = new AvailabilitySlot(employee, startTime, endTime);
         slot.setStatus(SlotStatus.AVAILABLE);
         slot = availabilitySlotRepository.save(slot);
 
@@ -57,7 +60,7 @@ public class AvailabilitySlotService {
     @Transactional(readOnly = true)
     public List<AvailabilitySlotResponse> getMySlots(User currentUser) {
         Employee employee = validateAndGetEmployee(currentUser);
-        List<AvailabilitySlot> slots = availabilitySlotRepository.findEByEmployee(employee);
+        List<AvailabilitySlot> slots = availabilitySlotRepository.findByEmployee(employee);
         return slots.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -121,13 +124,16 @@ public class AvailabilitySlotService {
             throw new IllegalArgumentException("Cannot update " + slot.getStatus() + " slots");
         }
 
+        ZonedDateTime startTime = request.getStartTime();
+        ZonedDateTime endTime = request.getEndTime();
+
         // Validate new times
-        validateSlotTimes(request.getStartTime(), request.getEndTime());
-        validateNoOverlap(employee, request.getStartTime(), request.getEndTime(), slotId);
+        validateSlotTimes(startTime, endTime);
+        validateNoOverlap(employee, startTime, endTime, slotId);
 
         // Update slot
-        slot.setStartTime(request.getStartTime());
-        slot.setEndTime(request.getEndTime());
+        slot.setStartTime(startTime);
+        slot.setEndTime(endTime);
         slot = availabilitySlotRepository.save(slot);
 
         return mapToResponse(slot);
@@ -190,79 +196,84 @@ public class AvailabilitySlotService {
     }
 
     //Validate slot times according to buisness rules.
-    private void validateSlotTimes(ZonedDateTime starTime, ZonedDateTime endTime) {
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+    private void validateSlotTimes(ZonedDateTime startTime, ZonedDateTime endTime) {
+        // Compare with current time in Swedish timezone
+        ZonedDateTime nowSwedish = ZonedDateTime.now(SWEDISH_TIMEZONE);
 
-        //Future only
-        if (starTime.isBefore(now)) {
-            throw new IllegalArgumentException("Can not create slots in the past");
+        // Future only
+        if (startTime.isBefore(nowSwedish)) {
+            throw new IllegalArgumentException("Cannot create slots in the past");
         }
 
-        //weekdays validation
-        DayOfWeek dayOfWeek = starTime.getDayOfWeek();
+        // Weekday validation (in Swedish timezone)
+        DayOfWeek dayOfWeek = startTime.getDayOfWeek();
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            throw new IllegalArgumentException("Slots can only be created on weekdays (Monday - Friday)");
+            throw new IllegalArgumentException("Slots can only be created on weekdays (Monday-Friday)");
         }
-        //Working hours validation (8-16)
-        int startHour = starTime.getHour();
-        int startMinute = starTime.getMinute();
+
+        // Working hours validation (08:00-16:00 in Swedish time)
+        int startHour = startTime.getHour();
+        int startMinute = startTime.getMinute();
         int endHour = endTime.getHour();
         int endMinute = endTime.getMinute();
 
-        //Start time must be on the hour of half-hour
-        if (startMinute != 0 && endMinute != 30) {
-            throw new IllegalArgumentException(
-                    String.format("Slots must be within working hours (%02d:00-%02d:00)", WORKING_HOUR_START, WORKING_HOUR_END)
-            );
+        // Start time must be on the hour or half-hour
+        if (startMinute != 0 && startMinute != 30) {
+            throw new IllegalArgumentException("Start time must be on the hour or half-hour (e.g., 08:00, 08:30)");
         }
-        // Check working hours
+
+        // Check working hours (in Swedish time)
         if (startHour < WORKING_HOUR_START ||
                 (startHour == WORKING_HOUR_START && startMinute < 0) ||
                 startHour >= WORKING_HOUR_END ||
                 (startHour == WORKING_HOUR_END && startMinute > 0)) {
             throw new IllegalArgumentException(
-                    String.format("Slots must be within working hours (%02d:00-%02d:00)",
+                    String.format("Slots must be within working hours (%02d:00-%02d:00 Swedish time)",
                             WORKING_HOUR_START, WORKING_HOUR_END));
         }
+
         // End time must be within working hours
         if (endHour > WORKING_HOUR_END ||
                 (endHour == WORKING_HOUR_END && endMinute > 0)) {
             throw new IllegalArgumentException(
-                    String.format("Slot end time must be within working hours (before %02d:00)",
+                    String.format("Slot end time must be within working hours (before %02d:00 Swedish time)",
                             WORKING_HOUR_END));
         }
 
-        //Duration validation (exactly 30 minutes)
-        Duration duration = Duration.between(starTime, endTime);
+        // Duration validation (exactly 30 minutes)
+        Duration duration = Duration.between(startTime, endTime);
         long durationMinutes = duration.toMinutes();
         if (durationMinutes != SLOT_DURATION_MINUTES) {
-            throw new IllegalArgumentException(String.format("Slot duration must be exactly %d minutes", SLOT_DURATION_MINUTES));
+            throw new IllegalArgumentException(
+                    String.format("Slot duration must be exactly %d minutes", SLOT_DURATION_MINUTES));
         }
     }
 
     //Validate that the new slot does not overlap with existing slots.
-    private void validateNoOverlap(Employee employee, ZonedDateTime startTime, ZonedDateTime endTime, UUID excludeSlotId) {
+    private void validateNoOverlap(Employee employee, ZonedDateTime startTime,
+                                   ZonedDateTime endTime, UUID excludeSlotId) {
+        // Get all existing slots for this employee
+        List<AvailabilitySlot> existingSlots = availabilitySlotRepository.findByEmployee(employee);
 
-        //Check for overlaping slots for better error messages
-        boolean hasOverlap = availabilitySlotRepository.hasOverlappingSlot(
-                employee, startTime, endTime, Arrays.asList(SlotStatus.CANCELLED));
-        if (hasOverlap) {
-            // Get overlapping slots for better error message
-            List<AvailabilitySlot> overlappingSlots = availabilitySlotRepository.findOverlappingSlots(
-                    employee, startTime, endTime);
-
-            // Filter out the slot being updated
-            if (excludeSlotId != null) {
-                overlappingSlots = overlappingSlots.stream()
-                        .filter(slot -> !slot.getId().equals(excludeSlotId))
-                        .collect(Collectors.toList());
+        // Check for overlaps by comparing times in Swedish timezone
+        for (AvailabilitySlot existingSlot : existingSlots) {
+            // Skip cancelled slots and the slot being updated
+            if (existingSlot.getStatus() == SlotStatus.CANCELLED) {
+                continue;
+            }
+            if (excludeSlotId != null && existingSlot.getId().equals(excludeSlotId)) {
+                continue;
             }
 
-            if (!overlappingSlots.isEmpty()) {
-                AvailabilitySlot conflict = overlappingSlots.get(0);
+            // Ensure existing slot times are in Swedish timezone
+            ZonedDateTime existingStart = existingSlot.getStartTime();
+            ZonedDateTime existingEnd = existingSlot.getEndTime();
+
+            // Check for overlap: newStart < existingEnd AND newEnd > existingStart
+            if (startTime.isBefore(existingEnd) && endTime.isAfter(existingStart)) {
                 throw new IllegalArgumentException(
-                        String.format("Slot overlaps with existing slot: %s to %s",
-                                conflict.getStartTime(), conflict.getEndTime()));
+                        String.format("Slot overlaps with existing slot: %s to %s (Swedish time)",
+                                existingStart, existingEnd));
             }
         }
     }

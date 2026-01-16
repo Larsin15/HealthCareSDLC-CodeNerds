@@ -1,5 +1,6 @@
 package healthcareab.project.healthcare_booking_app.models;
 
+import healthcareab.project.healthcare_booking_app.converters.SwedishTimeConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -23,11 +24,13 @@ public class AvailabilitySlot {
     @NotNull(message = "Employee is required") //deleting employee should fail if slots exist (data integrity)
     private Employee employee;
 
-    @Column(name = "start_time", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "start_time", nullable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    @Convert(converter = SwedishTimeConverter.class)
     @NotNull(message = "Start time is required")
     private ZonedDateTime startTime;
 
-    @Column(name = "end_time", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "end_time", nullable = false, columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    @Convert(converter = SwedishTimeConverter.class)
     @NotNull(message = "End time is required")
     private ZonedDateTime endTime;
 
