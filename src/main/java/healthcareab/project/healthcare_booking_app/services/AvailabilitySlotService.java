@@ -36,6 +36,35 @@ public class AvailabilitySlotService {
         this.authService = authService;
     }
 
+    //Create a new availability slot for the current employee
+    public AvailabilitySlotResponse createSlot(AvailabilitySlotRequest request, User currentUser) {
+        // Ensure user is an employee
+        Employee employee = validateAndGetEmployee(currentUser);
+
+        // Validate business rules
+        validateSlotTimes(request.getStartTime(), request.getEndTime());
+        validateNoOverlap(employee, request.getStartTime(), request.getEndTime(), null);
+
+        // Create and save slot
+        AvailabilitySlot slot = new AvailabilitySlot(employee, request.getStartTime(), request.getEndTime());
+        slot.setStatus(SlotStatus.AVAILABLE);
+        slot = availabilitySlotRepository.save(slot);
+
+        return mapToResponse(slot);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     //-------Validation methods--------
     //Validate if the user is an employee
     private Employee validateAndGetEmployee(User user) {
