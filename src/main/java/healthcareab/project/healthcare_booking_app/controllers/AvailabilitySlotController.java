@@ -77,6 +77,17 @@ public class AvailabilitySlotController {
         return ResponseEntity.ok(slots);
     }
 
+    //Update an existing available slot
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<AvailabilitySlotResponse> updateSlot(
+            @PathVariable UUID id,
+            @Valid @RequestBody AvailabilitySlotRequest request) {
+        User currentUser = getCurrentUser();
+        AvailabilitySlotResponse response = availabilitySlotService.updateSlot(id, request, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
 
 
 
