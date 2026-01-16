@@ -54,6 +54,25 @@ public class Appointment {
     public Appointment() {
     }
 
+    // Constructor for creating a new appointment
+    public Appointment(AvailabilitySlot availabilitySlot, Patient patient, Employee employee) {
+        this.availabilitySlot = availabilitySlot;
+        this.patient = patient;
+        this.employee = employee;
+        this.status = AppointmentStatus.BOOKED;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
 }
 
 
