@@ -88,6 +88,15 @@ public class AvailabilitySlotController {
         return ResponseEntity.ok(response);
     }
 
+    //Delete a specific a available slot
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<Void> cancelSlot(@PathVariable UUID id) {
+        User currentUser = getCurrentUser();
+        availabilitySlotService.cancelSlot(id, currentUser);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 
