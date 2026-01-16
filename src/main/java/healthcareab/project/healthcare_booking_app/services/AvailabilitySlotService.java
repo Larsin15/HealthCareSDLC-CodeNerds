@@ -133,6 +133,32 @@ public class AvailabilitySlotService {
         return mapToResponse(slot);
     }
 
+    //Delete a available slot
+    public void cancelSlot(UUID slotId, User currentUser) {
+        Employee employee = validateAndGetEmployee(currentUser);
+
+        AvailabilitySlot slot = availabilitySlotRepository.findById(slotId)
+                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+
+        // Verify ownership of slot
+        if (!slot.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("You can only cancel your own slots");
+        }
+
+        // Cannot cancel completed slots
+        if (slot.getStatus() == SlotStatus.COMPLETED) {
+            throw new IllegalArgumentException("Cannot cancel completed slots");
+        }
+
+        // If booked, set to cancelled. Otherwise, delete
+        if (slot.getStatus() == SlotStatus.BOOKED) {
+            slot.setStatus(SlotStatus.CANCELLED);
+            availabilitySlotRepository.save(slot);
+        } else {
+            availabilitySlotRepository.delete(slot);
+        }
+    }
+
 
 
 
