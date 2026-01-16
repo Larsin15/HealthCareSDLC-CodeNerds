@@ -134,4 +134,18 @@ public class AvailabilitySlotService {
     }
 
     //---------Mapping methods-------------
+    //Map availanilityslot entity to availabilityslotresponse dto
+    private AvailabilitySlotResponse mapToResponse(AvailabilitySlot slot) {
+        Employee employee = slot.getEmployee();
+        return new AvailabilitySlotResponse(
+                slot.getId(),
+                employee.getId(),
+                employee.getFirstName(),
+                employee.getSpecialization(),
+                slot.getStartTime(),
+                slot.getEndTime(),
+                slot.getStatus()
+
+        );
+    }
 }
