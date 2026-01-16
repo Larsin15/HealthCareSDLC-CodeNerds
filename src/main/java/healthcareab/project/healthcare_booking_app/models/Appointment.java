@@ -119,6 +119,97 @@ public class Appointment {
         this.status = AppointmentStatus.COMPLETED;
     }
 
+    //getters and setters
+
+    public UUID getId() {
+        return id;
+    }
+
+    public AvailabilitySlot getAvailabilitySlot() {
+        return availabilitySlot;
+    }
+
+    public void setAvailabilitySlot(AvailabilitySlot availabilitySlot) {
+        this.availabilitySlot = availabilitySlot;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public AppointmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AppointmentStatus status) {
+        this.status = status;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    // hashCode toString
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Appointment)) {
+            return false;
+        }
+        Appointment that = (Appointment) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "id=" + id +
+                ", patient=" + (patient != null ? patient.getUsername() : "null") +
+                ", employee=" + (employee != null ? employee.getUsername() : "null") +
+                ", slotTime=" + (availabilitySlot != null ? availabilitySlot.getStartTime() : "null") +
+                ", status=" + status +
+                '}';
+    }
+
 }
 
 
