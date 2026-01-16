@@ -80,6 +80,30 @@ public class AvailabilitySlotService {
                 .collect(Collectors.toList());
     }
 
+    //Get available slots for a specific employee
+    @Transactional(readOnly = true)
+    public List<AvailabilitySlotResponse> getAvailableSlotsByEmployee(
+            UUID employeeId, ZonedDateTime start, ZonedDateTime end) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        if (!employee.isAvailableForBooking()) {
+            throw new IllegalArgumentException("Employee is not available for booking");
+        }
+
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+        ZonedDateTime startDate = (start != null) ? start : now;
+        ZonedDateTime endDate = (end != null) ? end : now.plusMonths(3);
+
+        List<AvailabilitySlot> slots = availabilitySlotRepository
+                .findByEmployeeAndStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
+                        employee, SlotStatus.AVAILABLE, startDate, endDate);
+
+        return slots.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
 
 
 

@@ -41,7 +41,7 @@ public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySl
     );
 
     //Find availanle slots for a specific employee within a date range
-    List<AvailabilitySlot> indByEmployeeAndStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
+    List<AvailabilitySlot> findByEmployeeAndStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
             Employee employee,
             SlotStatus status,
             ZonedDateTime startTime,
