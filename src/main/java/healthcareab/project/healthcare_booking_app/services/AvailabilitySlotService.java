@@ -104,6 +104,35 @@ public class AvailabilitySlotService {
                 .collect(Collectors.toList());
     }
 
+    //update an existing available slots
+    public AvailabilitySlotResponse updateSlot(UUID slotId, AvailabilitySlotRequest request, User currentUser) {
+        Employee employee = validateAndGetEmployee(currentUser);
+
+        AvailabilitySlot slot = availabilitySlotRepository.findById(slotId)
+                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+
+        // Verify ownership for slot
+        if (!slot.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("You can only update your own slots");
+        }
+
+        // Cannot update booked or completed slots
+        if (slot.getStatus() == SlotStatus.BOOKED || slot.getStatus() == SlotStatus.COMPLETED) {
+            throw new IllegalArgumentException("Cannot update " + slot.getStatus() + " slots");
+        }
+
+        // Validate new times
+        validateSlotTimes(request.getStartTime(), request.getEndTime());
+        validateNoOverlap(employee, request.getStartTime(), request.getEndTime(), slotId);
+
+        // Update slot
+        slot.setStartTime(request.getStartTime());
+        slot.setEndTime(request.getEndTime());
+        slot = availabilitySlotRepository.save(slot);
+
+        return mapToResponse(slot);
+    }
+
 
 
 
