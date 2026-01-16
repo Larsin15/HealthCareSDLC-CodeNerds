@@ -102,6 +102,23 @@ public class Appointment {
         return status == AppointmentStatus.BOOKED;
     }
 
+    public boolean isInPast() {
+        return availabilitySlot.getEndTime().isBefore(ZonedDateTime.now(ZoneId.of("UTC")));
+    }
+
+    public boolean isActive() {
+        return status == AppointmentStatus.BOOKED && !isInPast();
+    }
+
+    public void cancel() {
+        this.status = AppointmentStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
+    }
+
+    public void complete() {
+        this.status = AppointmentStatus.COMPLETED;
+    }
+
 }
 
 
