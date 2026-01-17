@@ -170,4 +170,19 @@ public class AppointmentService {
             return AppointmentResponse.forEmployee(appointment);
         }
     }
+
+    // method helpers
+    private Patient validateAndGetPatient(User user) {
+        if (!(user instanceof Patient)) {
+            throw new IllegalArgumentException("Only patients can book appointments");
+        }
+        return (Patient) user;
+    }
+
+    private Employee validateAndGetEmployee(User user) {
+        if (!(user instanceof Employee)) {
+            throw new IllegalArgumentException("Only employees can access employee appointments");
+        }
+        return (Employee) user;
+    }
 }
