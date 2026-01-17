@@ -5,7 +5,6 @@ import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotResponse;
 import healthcareab.project.healthcare_booking_app.models.User;
 import healthcareab.project.healthcare_booking_app.services.AuthService;
 import healthcareab.project.healthcare_booking_app.services.AvailabilitySlotService;
-import jakarta.persistence.PrePersist;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

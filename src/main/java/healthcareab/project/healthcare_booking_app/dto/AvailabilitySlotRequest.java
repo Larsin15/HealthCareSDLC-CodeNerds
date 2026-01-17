@@ -1,5 +1,7 @@
 package healthcareab.project.healthcare_booking_app.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import healthcareab.project.healthcare_booking_app.deserializers.LocalTimePreservingZonedDateTimeDeserializer;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
@@ -7,9 +9,11 @@ import java.time.ZonedDateTime;
 public class AvailabilitySlotRequest {
 
     @NotNull(message = "Start time is required")
+    @JsonDeserialize(using = LocalTimePreservingZonedDateTimeDeserializer.class)
     private ZonedDateTime startTime;
 
     @NotNull(message = "End time is required")
+    @JsonDeserialize(using = LocalTimePreservingZonedDateTimeDeserializer.class)
     private ZonedDateTime endTime;
 
     public AvailabilitySlotRequest() {
