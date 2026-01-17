@@ -89,5 +89,38 @@ public class AppointmentResponse {
 
         return response;
     }
+
+    // Constructor for manual creation (testing)
+    public AppointmentResponse(
+            UUID id,
+            UUID availabilitySlotId,
+            ZonedDateTime slotStartTime,
+            ZonedDateTime slotEndTime,
+            UUID employeeId,
+            String employeeName,
+            String employeeSpecialization,
+            UUID patientId,
+            String patientName,
+            AppointmentStatus status,
+            String notes,
+            LocalDateTime createdAt,
+            LocalDateTime cancelledAt,
+            boolean canCancel
+    ) {
+        this.id = id;
+        this.availabilitySlotId = availabilitySlotId;
+        this.slotStartTime = slotStartTime;
+        this.slotEndTime = slotEndTime;
+        this.employeeId = employeeId;
+        this.employeeName = employeeName;
+        this.employeeSpecialization = employeeSpecialization;
+        this.patientId = patientId;
+        this.patientName = patientName;
+        this.status = status;
+        this.notes = notes;
+        this.createdAt = createdAt;
+        this.cancelledAt = cancelledAt;
+        this.canCancel = canCancel;
+    }
 }
 
