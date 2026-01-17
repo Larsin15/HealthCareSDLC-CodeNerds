@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -133,5 +135,39 @@ public class AppointmentService {
         return appointments.stream()
                 .map(AppointmentResponse::forPatient)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getEmployeeAppointments(User currentUser) {
+        Employee employee = validateAndGetEmployee(currentUser);
+
+        List<Appointment> appointments = appointmentRepository
+                .findByEmployeeIdOrderBySlotStartTimeDesc(employee.getId());
+
+        return appointments.stream()
+                .map(AppointmentResponse::forEmployee)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public AppointmentResponse getAppointmentById(UUID appointmentId, User currentUser) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+
+        // Check authorization
+        boolean isPatient = currentUser instanceof Patient
+                && appointment.getPatient().getId().equals(currentUser.getId());
+        boolean isEmployee = currentUser instanceof Employee
+                && appointment.getEmployee().getId().equals(currentUser.getId());
+
+        if (!isPatient && !isEmployee) {
+            throw new IllegalArgumentException("You are not authorized to view this appointment");
+        }
+
+        if (isPatient) {
+            return AppointmentResponse.forPatient(appointment);
+        } else {
+            return AppointmentResponse.forEmployee(appointment);
+        }
     }
 }
