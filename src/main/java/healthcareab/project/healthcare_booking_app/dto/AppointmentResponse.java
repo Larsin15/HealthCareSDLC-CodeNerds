@@ -122,5 +122,118 @@ public class AppointmentResponse {
         this.cancelledAt = cancelledAt;
         this.canCancel = canCancel;
     }
+
+    // getters and setters
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getAvailabilitySlotId() {
+        return availabilitySlotId;
+    }
+
+    public void setAvailabilitySlotId(UUID availabilitySlotId) {
+        this.availabilitySlotId = availabilitySlotId;
+    }
+
+    public ZonedDateTime getSlotStartTime() {
+        return slotStartTime;
+    }
+
+    public void setSlotStartTime(ZonedDateTime slotStartTime) {
+        this.slotStartTime = slotStartTime;
+    }
+
+    public ZonedDateTime getSlotEndTime() {
+        return slotEndTime;
+    }
+
+    public void setSlotEndTime(ZonedDateTime slotEndTime) {
+        this.slotEndTime = slotEndTime;
+    }
+
+    public UUID getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(UUID employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
+    }
+
+    public String getEmployeeSpecialization() {
+        return employeeSpecialization;
+    }
+
+    public void setEmployeeSpecialization(String employeeSpecialization) {
+        this.employeeSpecialization = employeeSpecialization;
+    }
+
+    public UUID getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(UUID patientId) {
+        this.patientId = patientId;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public AppointmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AppointmentStatus status) {
+        this.status = status;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isCanCancel() {
+        return canCancel;
+    }
+
+    public void setCanCancel(boolean canCancel) {
+        this.canCancel = canCancel;
+    }
 }
 
