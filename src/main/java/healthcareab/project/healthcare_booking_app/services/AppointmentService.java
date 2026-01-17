@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -75,5 +76,62 @@ public class AppointmentService {
         // 9. Save and return appointment
         Appointment saved = appointmentRepository.save(appointment);
         return AppointmentResponse.forPatient(saved);
+    }
+
+    public AppointmentResponse cancelAppointment(UUID appointmentId, User currentUser) {
+        // 1. Fetch the appointment
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+
+        // 2. Check that appointment is still active
+        if (appointment.getStatus() != AppointmentStatus.BOOKED) {
+            throw new IllegalArgumentException("This appointment cannot be cancelled (status: "
+                    + appointment.getStatus() + ")");
+        }
+
+        // 3. Validate ownership and cancellation rules
+        boolean isPatient = currentUser instanceof Patient
+                && appointment.getPatient().getId().equals(currentUser.getId());
+        boolean isEmployee = currentUser instanceof Employee
+                && appointment.getEmployee().getId().equals(currentUser.getId());
+
+        if (!isPatient && !isEmployee) {
+            throw new IllegalArgumentException("You can only cancel your own appointments");
+        }
+
+        // 4. If patient (check 24 hour rule)
+        if (isPatient && !appointment.canBeCancelledByPatient()) {
+            throw new IllegalArgumentException(
+                    "Patients can only cancel appointments at least " + MIN_HOURS_BEFORE_PATIENT_CANCEL
+                            + " hours before the scheduled time");
+        }
+
+        // 5. Cancel the appointment
+        appointment.cancel();
+        appointmentRepository.save(appointment);
+
+        // 6. Return slot to AVAILABLE status
+        AvailabilitySlot slot = appointment.getAvailabilitySlot();
+        slot.setStatus(SlotStatus.AVAILABLE);
+        availabilitySlotRepository.save(slot);
+
+        // 7. Return response
+        if (isPatient) {
+            return AppointmentResponse.forPatient(appointment);
+        } else {
+            return AppointmentResponse.forEmployee(appointment);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getPatientAppointments(User currentUser) {
+        Patient patient = validateAndGetPatient(currentUser);
+
+        List<Appointment> appointments = appointmentRepository
+                .findByPatientIdOrderBySlotStartTimeDesc(patient.getId());
+
+        return appointments.stream()
+                .map(AppointmentResponse::forPatient)
+                .collect(Collectors.toList());
     }
 }
