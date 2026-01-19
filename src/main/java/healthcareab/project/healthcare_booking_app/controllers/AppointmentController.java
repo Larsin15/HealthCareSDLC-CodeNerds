@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -52,6 +54,44 @@ public class AppointmentController {
         User currentUser = getCurrentUser();
         List<AppointmentResponse> appointments = appointmentService.getEmployeeAppointments(currentUser);
         return ResponseEntity.ok(appointments);
+    }
+
+    /**
+     * Get a specific appointment by ID.
+     * Both patient and employee can view their own appointments.
+     * @param id the appointment ID
+     * @return the appointment details
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PATIENT', 'EMPLOYEE')")
+    public ResponseEntity<AppointmentResponse> getAppointmentById(@PathVariable UUID id) {
+        User currentUser = getCurrentUser();
+        AppointmentResponse response = appointmentService.getAppointmentById(id, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Cancel an appointment.
+     * Patients can cancel 24+ hours before, employees can cancel anytime.
+     * @param id the appointment ID to cancel
+     * @return the cancelled appointment with success message
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PATIENT', 'EMPLOYEE')")
+    public ResponseEntity<Map<String, Object>> cancelAppointment(@PathVariable UUID id) {
+        User currentUser = getCurrentUser();
+        AppointmentResponse response = appointmentService.cancelAppointment(id, currentUser);
+
+        Map<String, Object> result = Map.of(
+                "message", "Appointment cancelled successfully",
+                "appointment", response,
+                "refundedSlot", Map.of(
+                        "startTime", response.getSlotStartTime(),
+                        "endTime", response.getSlotEndTime()
+                )
+        );
+
+        return ResponseEntity.ok(result);
     }
 }
 
