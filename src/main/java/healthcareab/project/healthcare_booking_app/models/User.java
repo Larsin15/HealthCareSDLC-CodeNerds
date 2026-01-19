@@ -31,6 +31,7 @@ public abstract class User {
                     "one uppercase letter, one number, and one special character"
     )
     private String password;
+    // Test
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name ="user_roles", joinColumns = @JoinColumn(name = "user_id"))
