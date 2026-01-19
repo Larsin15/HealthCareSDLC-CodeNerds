@@ -185,5 +185,21 @@ public class AppointmentService {
         }
         return (Employee) user;
     }
+
+    public void testSonar(int a, int b, int c) {
+        if (a > 0) {
+            if (b > 0) {
+                if (c > 0) {
+                    System.out.println("All positive");
+                } else {
+                    System.out.println("c <= 0");
+                }
+            } else {
+                System.out.println("b <= 0");
+            }
+        } else {
+            System.out.println("a <= 0");
+        }
+    }
 }
 
