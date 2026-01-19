@@ -41,4 +41,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           JWT_SECRET: test-secret-key-for-ci-cd-testing
-        run: mvn clean verify sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=codenerds-sdlc -Dsonar.projectKey=CodeNerds_HealthCareSDLC-CodeNerds -Dsonar.qualitygate.wait=true
+        run: mvn clean verify sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=Larsin15 -Dsonar.projectKey=Larsin15_HealthCareSDLC-CodeNerds -Dsonar.qualitygate.wait=true
