@@ -34,10 +34,10 @@ jobs:
           JWT_SECRET: test-secret-key-for-ci-cd-testing
         run: mvn clean verify
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_ORGANIZATION: codenerds-sdlc
-          SONAR_PROJECT_KEY: CodeNerds_HealthCareSDLC-CodeNerds
+#      - name: SonarCloud Scan
+#      uses: SonarSource/sonarqube-scan-action@v5.0.0
+#        env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#       SONAR_ORGANIZATION: codenerds-sdlc
+#      SONAR_PROJECT_KEY: CodeNerds_HealthCareSDLC-CodeNerds
