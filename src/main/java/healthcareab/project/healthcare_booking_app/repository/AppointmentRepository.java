@@ -46,3 +46,4 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     boolean existsByAvailabilitySlotId(@Param("slotId") UUID slotId);
 }
 
+

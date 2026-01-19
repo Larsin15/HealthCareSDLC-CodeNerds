@@ -6,3 +6,4 @@ public enum AppointmentStatus {
     COMPLETED    // Past appointment that was completed
 }
 
+
