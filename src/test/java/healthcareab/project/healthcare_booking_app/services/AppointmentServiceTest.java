@@ -580,6 +580,23 @@ public class AppointmentServiceTest {
         void dummyTest() {
             assertTrue(true);
         }
+
+        @Test
+        @DisplayName("Should successfully book an appointment")
+        void bookAppointment_Success() {
+            AppointmentRequest request = new AppointmentRequest(slotId);
+            when(appointmentRepository.hasActiveBooking(testPatient.getId())).thenReturn(false);
+            when(availabilitySlotRepository.findById(slotId)).thenReturn(Optional.of(testSlot));
+            when(availabilitySlotRepository.save(any(AvailabilitySlot.class))).thenReturn(testSlot);
+            when(appointmentRepository.save(any(Appointment.class))).thenReturn(testAppointment);
+
+            AppointmentResponse response = appointmentService.bookAppointment(request, testPatient);
+
+            assertNotNull(response);
+            assertEquals(AppointmentStatus.BOOKED, response.getStatus());
+        }
+
+
     }
 }
 
