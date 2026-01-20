@@ -33,8 +33,6 @@ jobs:
       - name: Build with Maven
         run: mvn -B verify
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
-        with:
-          projectKey: Larsin15_HealthCareSDLC-CodeNerds
-          organization: larsin15
-          token: ${{ secrets.SONAR_TOKEN }}
+        uses: sonarsource/sonarqube-scan-action@v5.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
