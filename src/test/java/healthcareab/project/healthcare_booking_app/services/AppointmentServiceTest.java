@@ -575,6 +575,11 @@ public class AppointmentServiceTest {
             );
             assertTrue(exception.getMessage().contains("not authorized"));
         }
+
+        @Test
+        void dummyTest() {
+            assertTrue(true);
+        }
     }
 }
 
