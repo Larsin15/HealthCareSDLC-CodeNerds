@@ -33,6 +33,7 @@
 		<sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.coverage.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.xmlReportPaths>
 		<sonar.language>java</sonar.language>
+		<sonar.organization>larsin15</sonar.organization>
 	</properties>
 	<dependencies>
 
