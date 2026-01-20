@@ -33,7 +33,7 @@ jobs:
       - name: Build with Maven
         run: mvn -B verify
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v2
+        uses: sonarsource/sonarcloud-github-action@master
         with:
           projectKey: Larsin15_HealthCareSDLC-CodeNerds
           organization: larsin15
