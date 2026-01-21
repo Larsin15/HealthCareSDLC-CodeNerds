@@ -37,9 +37,12 @@ public class SecurityConfig {
     }
 
     // main config for security filter and rules
+    // main config for security filter and rules
+    // main config for security filter and rules
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // CORS config
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // CSRF, disable in dev
                 // OBS! should not be disabled in production
@@ -48,9 +51,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        // REMOVED: .requestMatchers("/api/patients/**").permitAll()
                         // Authenticated endpoints
-                        .requestMatchers("/auth/logout", "/auth/profile", "/api/availability").authenticated()
-
+                        .requestMatchers("/auth/logout", "/auth/profile").authenticated()
                         // any other requests the user need to be logged
                         .anyRequest().authenticated()
                 )

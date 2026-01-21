@@ -15,7 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,7 @@ public class PatientController {
      * Only employees with an assigned appointment see full name.
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('EMPLOYEE', 'ADMIN')")  // TEMPORARILY DISABLED FOR TESTING
     public ResponseEntity<PatientResponse> getPatientById(@PathVariable UUID id) {
         Patient patient = patientRepository.findById(id)
                 .orElse(null);
@@ -62,11 +64,11 @@ public class PatientController {
      * Returns masked/unmasked data depending on assignment.
      */
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('EMPLOYEE', 'ADMIN')")// TEMPORARILY DISABLED FOR TESTING
     public ResponseEntity<List<PatientResponse>> searchPatients(
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName
-    ) {
+    ){
         List<Patient> patients;
 
         if (firstName != null && lastName != null) {
@@ -108,5 +110,18 @@ public class PatientController {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         return authService.findByUsername(userDetails.getUsername());
+    }
+    // Add this to PatientController temporarily for debugging
+    @GetMapping("/debug/roles")
+    @PreAuthorize("authenticated")
+    public ResponseEntity<Map<String, Object>> debugRoles() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Map<String, Object> debug = new HashMap<>();
+        debug.put("authenticated", auth != null && auth.isAuthenticated());
+        debug.put("principal", auth != null ? auth.getPrincipal().getClass().getName() : null);
+        debug.put("authorities", auth != null ? auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .collect(Collectors.toList()) : null);
+        return ResponseEntity.ok(debug);
     }
 }
