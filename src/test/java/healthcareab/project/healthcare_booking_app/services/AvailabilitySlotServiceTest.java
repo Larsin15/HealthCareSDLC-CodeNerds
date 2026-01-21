@@ -606,7 +606,48 @@ public class AvailabilitySlotServiceTest {
             assertEquals(employeeId, result.get(0).getEmployeeId());
             assertEquals(slotId, result.get(0).getId());
         }
+
+        @Test
+        @DisplayName("getMySlots should return an empty list when employee doesnt have any slots")
+        void getMySlots_Empty() {
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of());
+
+            var result = availabilitySlotService.getMySlots(employee);
+
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        @DisplayName("getAvailableSlots should filter on status and time")
+        void getAvailableSlots_FiltersCorrectly() {
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            ZonedDateTime queryStart = ZonedDateTime.now(ZoneId.of("UTC"));
+            ZonedDateTime queryEnd = queryStart.plusMonths(3);
+
+            AvailabilitySlot availableSlot = new AvailabilitySlot(employee, start, end);
+            availableSlot.setStatus(SlotStatus.AVAILABLE);
+            setSlotId(availableSlot, UUID.randomUUID());
+
+            when(availabilitySlotRepository
+                    .findByStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
+                            SlotStatus.AVAILABLE, queryStart, queryEnd))
+                    .thenReturn(List.of(availableSlot));
+
+            var result = availabilitySlotService.getAvailableSlots(queryStart, queryEnd);
+
+            assertEquals(1, result.size());
+            assertEquals(SlotStatus.AVAILABLE, result.get(0).getStatus());
+        }
+
+
+
+
+
     }
+
+
 
 
 
