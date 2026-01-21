@@ -391,23 +391,53 @@ public class AvailabilitySlotControllerTest {
             assertThrows(IllegalArgumentException.class,
                     () -> availabilitySlotController.cancelSlot(slotId));
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
 
+    @Nested
+    @DisplayName("Authentication Tests")
+    class AuthenticationTests {
+
+        @Test
+        @DisplayName("Throws when user isnt authenticated")
+        void anyEndpoint_NotAuthenticated_ShouldThrow() {
+            when(securityContext.getAuthentication()).thenReturn(null);
+            SecurityContextHolder.setContext(securityContext);
+
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            assertThrows(IllegalStateException.class,
+                    () -> availabilitySlotController.createSlot(request));
+        }
 
 
+        @Test
+        @DisplayName("Throws when authentication is null")
+        void anyEndpoint_NullAuthentication_ShouldThrow() {
+            when(securityContext.getAuthentication()).thenReturn(null);
+            SecurityContextHolder.setContext(securityContext);
+
+            assertThrows(IllegalStateException.class,
+                    () -> availabilitySlotController.getMySlots());
+        }
+
+        @Test
+        @DisplayName("Throws when authentication isnt authenticated")
+        void anyEndpoint_NotAuthenticatedFlag_ShouldThrow() {
+            when(securityContext.getAuthentication()).thenReturn(authentication);
+            when(authentication.isAuthenticated()).thenReturn(false);
+            SecurityContextHolder.setContext(securityContext);
+
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            assertThrows(IllegalStateException.class,
+                    () -> availabilitySlotController.createSlot(request));
+        }
+    }
 }
