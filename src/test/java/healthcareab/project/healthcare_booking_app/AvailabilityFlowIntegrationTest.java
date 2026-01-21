@@ -172,8 +172,37 @@ public class AvailabilityFlowIntegrationTest {
                     .anyMatch(s -> s.getId().equals(slot2.getId())));
         }
 
+        @Test
+        @DisplayName("getMySlots returns only the slots for logged in employees")
+        void getMySlots_ReturnsOnlyOwnSlots() {
+            Employee employee1 = createEmployee();
+            Employee employee2 = new Employee();
+            employee2.setUsername("doctor2@test.com");
+            employee2.setPassword("Password123!");
+            employee2.setEmail("doctor2@test.com");
+            employee2.setFirstName("Dr");
+            employee2.setLastName("Smith");
+            employee2.setEmployeeNumber("E0002");
+            employee2.setSpecialization("Cardiology");
+            employee2.setAvailableForBooking(true);
+            employee2.setRoles(Set.of(Role.EMPLOYEE));
+            employee2 = employeeRepository.save(employee2);
 
+            ZonedDateTime start1 = nextWeekdayAt(8, 0);
+            ZonedDateTime end1 = start1.plusMinutes(30);
+            availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start1, end1), employee1);
 
+            ZonedDateTime start2 = nextWeekdayAt(9, 0);
+            ZonedDateTime end2 = start2.plusMinutes(30);
+            availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start2, end2), employee2);
+
+            var mySlots = availabilitySlotService.getMySlots(employee1);
+
+            assertEquals(1, mySlots.size());
+            assertEquals(employee1.getId(), mySlots.get(0).getEmployeeId());
+        }
     }
 
 }
