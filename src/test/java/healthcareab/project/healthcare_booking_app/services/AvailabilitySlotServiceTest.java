@@ -362,7 +362,36 @@ public class AvailabilitySlotServiceTest {
         }
 
 
+        @Test
+        @DisplayName("Should not be able to update someone elses slot")
+        void updateSlot_NotOwner_ShouldThrow() {
+            UUID slotId = UUID.randomUUID();
+            Employee otherEmployee = new Employee();
+            otherEmployee.setUsername("other@test.com");
+            otherEmployee.setRoles(Set.of(Role.EMPLOYEE));
+            otherEmployee.setEmployeeNumber("E9999");
+            otherEmployee.setSpecialization("Other");
+            otherEmployee.setAvailableForBooking(true);
+            setUserId(otherEmployee, UUID.randomUUID());
 
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlot existing = new AvailabilitySlot(otherEmployee, start, end);
+            existing.setStatus(SlotStatus.AVAILABLE);
+            setSlotId(existing, slotId);
+
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.updateSlot(slotId, request, employee)
+            );
+            assertEquals("You can only update your own slots", ex.getMessage());
+        }
 
 
 
