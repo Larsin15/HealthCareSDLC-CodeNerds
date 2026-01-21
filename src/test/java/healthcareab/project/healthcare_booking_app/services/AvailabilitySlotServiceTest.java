@@ -308,6 +308,52 @@ public class AvailabilitySlotServiceTest {
         }
     }
 
+    //Update slot tests
+
+    @Nested
+    @DisplayName("Update slot tests")
+    class UpdateSlotTests {
+
+        @Test
+        @DisplayName("Update slot when everything is valid")
+        void updateSlot_Success() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime originalStart = nextWeekdayAt(9, 0);
+            ZonedDateTime originalEnd = originalStart.plusMinutes(30);
+
+            AvailabilitySlot existing = new AvailabilitySlot(employee, originalStart, originalEnd);
+            existing.setStatus(SlotStatus.AVAILABLE);
+            setSlotId(existing, slotId);
+
+            ZonedDateTime newStart = nextWeekdayAt(10, 0);
+            ZonedDateTime newEnd = newStart.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(newStart, newEnd);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of(existing));
+            when(availabilitySlotRepository.save(any(AvailabilitySlot.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            AvailabilitySlotResponse response =
+                    availabilitySlotService.updateSlot(slotId, request, employee);
+
+            assertEquals(newStart, response.getStartTime());
+            assertEquals(newEnd, response.getEndTime());
+        }
+
+
+
+
+
+
+
+
+
+
+    }
+
 
 
 
