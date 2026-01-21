@@ -163,6 +163,21 @@ public class AvailabilitySlotServiceTest {
             assertTrue(ex.getMessage().contains("Not available for booking"));
         }
 
+        @Test
+        @DisplayName("Should throw error with time in the past")
+        void createSlot_PastTime_ShouldThrow() {
+            ZonedDateTime startPast = ZonedDateTime.now(ZoneId.of("Europe/Stockholm"))
+                    .minusHours(1);
+            ZonedDateTime endPast = startPast.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(startPast, endPast);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertEquals("Cannot create slots in the past", ex.getMessage());
+        }
+
 
 
 
