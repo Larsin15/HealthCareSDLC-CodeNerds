@@ -393,7 +393,28 @@ public class AvailabilitySlotServiceTest {
             assertEquals("You can only update your own slots", ex.getMessage());
         }
 
+        @Test
+        @DisplayName("Should not be able to update an BOOKED slot")
+        void updateSlot_Booked_ShouldThrow() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
 
+            AvailabilitySlot existing = new AvailabilitySlot(employee, start, end);
+            existing.setStatus(SlotStatus.BOOKED);
+            setSlotId(existing, slotId);
+
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.updateSlot(slotId, request, employee)
+            );
+            assertTrue(ex.getMessage().contains("Cannot update BOOKED slots"));
+        }
 
 
 
