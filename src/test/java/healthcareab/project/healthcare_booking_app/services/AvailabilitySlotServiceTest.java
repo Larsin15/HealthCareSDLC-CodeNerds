@@ -552,6 +552,62 @@ public class AvailabilitySlotServiceTest {
             assertEquals("Slot not found", ex.getMessage());
         }
 
+    @Test
+    @DisplayName("Should not be able to delete another employees slot")
+    void cancelSlot_NotOwner_ShouldThrow() {
+        UUID slotId = UUID.randomUUID();
+        Employee otherEmployee = new Employee();
+        otherEmployee.setUsername("other@test.com");
+        otherEmployee.setRoles(Set.of(Role.EMPLOYEE));
+        otherEmployee.setEmployeeNumber("E9999");
+        otherEmployee.setSpecialization("Other");
+        otherEmployee.setAvailableForBooking(true);
+        setUserId(otherEmployee, UUID.randomUUID());
+
+        ZonedDateTime start = nextWeekdayAt(9, 0);
+        ZonedDateTime end = start.plusMinutes(30);
+
+        AvailabilitySlot existing = new AvailabilitySlot(otherEmployee, start, end);
+        existing.setStatus(SlotStatus.AVAILABLE);
+        setSlotId(existing, slotId);
+
+        when(availabilitySlotRepository.findById(slotId))
+                .thenReturn(java.util.Optional.of(existing));
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> availabilitySlotService.cancelSlot(slotId, employee)
+        );
+        assertEquals("You can only cancel your own slots", ex.getMessage());
+    }
+
+    // ========== QUERY TESTS ==========
+
+    @Nested
+    @DisplayName("Query Tests")
+    class QueryTests {
+        @Test
+        @DisplayName("getMySlots should retur slots for logged in employee")
+        void getMySlots_Success() {
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlot slot = new AvailabilitySlot(employee, start, end);
+            slot.setStatus(SlotStatus.AVAILABLE);
+            UUID slotId = UUID.randomUUID();
+            setSlotId(slot, slotId);
+
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of(slot));
+
+            var result = availabilitySlotService.getMySlots(employee);
+
+            assertEquals(1, result.size());
+            assertEquals(employeeId, result.get(0).getEmployeeId());
+            assertEquals(slotId, result.get(0).getId());
+        }
+    }
+
 
 
 
