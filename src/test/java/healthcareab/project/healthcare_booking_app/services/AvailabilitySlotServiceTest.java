@@ -198,7 +198,7 @@ public class AvailabilitySlotServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw when trying to make a slot outside working hours")
+        @DisplayName("Should throw when trying to make a slot outside working hours( before 08:00)")
         void createSlot_BeforeWorkingHours_ShouldThrow() {
             ZonedDateTime start = nextWeekdayAt(7, 0);
             ZonedDateTime end = start.plusMinutes(30);
@@ -226,6 +226,19 @@ public class AvailabilitySlotServiceTest {
         }
 
 
+        @Test
+        @DisplayName("Should throw when trying to make a slot outside working hours ( after 16:00)")
+        void createSlot_AfterWorkingHours_ShouldThrow() {
+            ZonedDateTime start = nextWeekdayAt(16, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("working hours"));
+        }
 
 
 
