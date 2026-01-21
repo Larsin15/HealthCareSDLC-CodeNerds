@@ -491,6 +491,32 @@ public class AvailabilitySlotServiceTest {
         }
 
 
+        @Test
+        @DisplayName("should set BOOKED slot to CANCELLED instead of deleting slot ")
+        void cancelSlot_Booked_ShouldMarkCancelled() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlot existing = new AvailabilitySlot(employee, start, end);
+            existing.setStatus(SlotStatus.BOOKED);
+            setSlotId(existing, slotId);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+            when(availabilitySlotRepository.save(any(AvailabilitySlot.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            availabilitySlotService.cancelSlot(slotId, employee);
+
+            ArgumentCaptor<AvailabilitySlot> captor =
+                    ArgumentCaptor.forClass(AvailabilitySlot.class);
+            verify(availabilitySlotRepository).save(captor.capture());
+            assertEquals(SlotStatus.CANCELLED, captor.getValue().getStatus());
+            verify(availabilitySlotRepository, never()).delete(any());
+        }
+
+
 
 
 
