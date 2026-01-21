@@ -642,6 +642,23 @@ public class AvailabilitySlotServiceTest {
         }
 
 
+        @Test
+        @DisplayName("getAvailableSlotsByEmployee should throw when employee doesnt exist")
+        void getAvailableSlotsByEmployee_EmployeeNotFound_ShouldThrow() {
+            UUID nonExistentId = UUID.randomUUID();
+
+            when(employeeRepository.findById(nonExistentId))
+                    .thenReturn(java.util.Optional.empty());
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.getAvailableSlotsByEmployee(
+                            nonExistentId, null, null)
+            );
+            assertEquals("Employee not found", ex.getMessage());
+        }
+
+
 
 
 
