@@ -314,6 +314,49 @@ public class AvailabilitySlotControllerTest {
             verify(availabilitySlotService).getAvailableSlotsByEmployee(
                     eq(requestedEmployeeId), eq(filterStart), eq(filterEnd));
         }
+    }
+
+    @Nested
+    @DisplayName("Update & Cancel Endpoints")
+    class UpdateCancelEndpoints {
+
+        @Test
+        @DisplayName("updateSlot update a slot and returns 200 OK")
+        void updateSlot_Success() {
+            setupSecurityContext(employee);
+
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(9).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            AvailabilitySlotResponse dto = new AvailabilitySlotResponse(
+                    slotId,
+                    employeeId,
+                    employee.getFirstName() + " " + employee.getLastName(),
+                    employee.getSpecialization(),
+                    start,
+                    end,
+                    SlotStatus.AVAILABLE
+            );
+
+            when(availabilitySlotService.updateSlot(eq(slotId), eq(request), eq(employee)))
+                    .thenReturn(dto);
+
+            ResponseEntity<AvailabilitySlotResponse> response =
+                    availabilitySlotController.updateSlot(slotId, request);
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertNotNull(response.getBody());
+            assertEquals(slotId, response.getBody().getId());
+            verify(availabilitySlotService).updateSlot(eq(slotId), eq(request), eq(employee));
+        }
+
+
+
+
+
+
 
 
 
