@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -203,6 +204,43 @@ public class AvailabilityFlowIntegrationTest {
             assertEquals(1, mySlots.size());
             assertEquals(employee1.getId(), mySlots.get(0).getEmployeeId());
         }
+    }
+
+    @Nested
+    @DisplayName("Double Booking Prevention")
+    class DoubleBookingPrevention {
+
+        @Test
+        @DisplayName("Prevent overlaping availabilitySlot for the same employee")
+        void preventOverlappingAvailabilitySlots() {
+            Employee employee = createEmployee();
+
+            ZonedDateTime start1 = nextWeekdayAt(8, 0);
+            ZonedDateTime end1 = start1.plusMinutes(30);
+            AvailabilitySlotRequest firstReq = new AvailabilitySlotRequest(start1, end1);
+
+            // Första slot ska funka
+            var first = availabilitySlotService.createSlot(firstReq, employee);
+            assertNotNull(first.getId());
+
+            // Försök skapa en överlappande slot (t.ex. 08:00-08:30 överlappar med 08:00-08:30)
+            // Använd samma tid för att testa overlap
+            ZonedDateTime startOverlap = start1; // Samma starttid
+            ZonedDateTime endOverlap = startOverlap.plusMinutes(30);
+            AvailabilitySlotRequest overlappingReq =
+                    new AvailabilitySlotRequest(startOverlap, endOverlap);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(overlappingReq, employee)
+            );
+            assertTrue(ex.getMessage().contains("overlaps with existing slot"));
+
+            // Endast en slot i databasen
+            List<AvailabilitySlot> slots = availabilitySlotRepository.findByEmployee(employee);
+            assertEquals(1, slots.size());
+        }
+
     }
 
 }
