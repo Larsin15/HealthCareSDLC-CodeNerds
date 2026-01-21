@@ -160,7 +160,7 @@ public class AvailabilitySlotServiceTest {
                     IllegalArgumentException.class,
                     () -> availabilitySlotService.createSlot(request, employee)
             );
-            assertTrue(ex.getMessage().contains("Not available for booking"));
+            assertTrue(ex.getMessage().contains("not available for booking"));
         }
 
         @Test
@@ -196,6 +196,35 @@ public class AvailabilitySlotServiceTest {
             );
             assertTrue(ex.getMessage().contains("weekdays (Monday-Friday)"));
         }
+
+        @Test
+        @DisplayName("Should throw when trying to make a slot outside working hours")
+        void createSlot_BeforeWorkingHours_ShouldThrow() {
+            ZonedDateTime start = nextWeekdayAt(7, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("working hours"));
+        }
+
+        @Test
+        @DisplayName("Should throw error when trying to create a slot that isnt half or full hour")
+        void createSlot_InvalidMinute_ShouldThrow() {
+            ZonedDateTime start = nextWeekdayAt(9, 15); // 09:15
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("Start time must be on the hour or half-hour"));
+        }
+
 
 
 
