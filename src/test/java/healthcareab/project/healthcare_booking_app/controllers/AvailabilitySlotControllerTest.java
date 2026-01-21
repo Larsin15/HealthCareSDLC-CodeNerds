@@ -26,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -132,9 +133,43 @@ public class AvailabilitySlotControllerTest {
             assertEquals(slotId, response.getBody().getId());
             verify(availabilitySlotService).createSlot(eq(request), eq(employee));
         }
+    }
 
+    @Nested
+    @DisplayName("Get My Slots Endpoint")
+    class GetMySlotsEndpoint {
 
+        @Test
+        @DisplayName("Return slots for employee that is logged on")
+        void getMySlots_Success() {
+            setupSecurityContext(employee);
 
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotResponse dto = new AvailabilitySlotResponse(
+                    slotId,
+                    employeeId,
+                    employee.getFirstName() + " " + employee.getLastName(),
+                    employee.getSpecialization(),
+                    start,
+                    end,
+                    SlotStatus.AVAILABLE
+            );
+
+            when(availabilitySlotService.getMySlots(eq(employee)))
+                    .thenReturn(List.of(dto));
+
+            ResponseEntity<List<AvailabilitySlotResponse>> response =
+                    availabilitySlotController.getMySlots();
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertNotNull(response.getBody());
+            assertEquals(1, response.getBody().size());
+            assertEquals(slotId, response.getBody().get(0).getId());
+            verify(availabilitySlotService).getMySlots(eq(employee));
+        }
     }
 
 
