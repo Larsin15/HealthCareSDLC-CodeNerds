@@ -98,7 +98,7 @@ public class AvailabilitySlotServiceTest {
     class CreateSlotTests {
 
         @Test
-        @DisplayName("Skapar slot när allt är giltigt")
+        @DisplayName("create a valid slot")
         void createSlot_Success() {
             ZonedDateTime start = nextWeekdayAt(9, 0);
             ZonedDateTime end = start.plusMinutes(30);
@@ -130,25 +130,28 @@ public class AvailabilitySlotServiceTest {
             assertEquals(SlotStatus.AVAILABLE, captor.getValue().getStatus());
         }
 
+        @Test
+        @DisplayName("Throw error when employee is missing role EMPLOYEE")
+        void createSlot_EmployeeWithoutRole_ShouldThrow() {
+            employee.setRoles(Set.of(Role.ADMIN)); // not a EMPLOYEE role
+
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("User must have EMPLOYEE role"));
+        }
+
+
 
 
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
