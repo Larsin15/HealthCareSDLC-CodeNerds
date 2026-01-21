@@ -321,7 +321,43 @@ public class AvailabilityFlowIntegrationTest {
             assertTrue(ex.getMessage().contains("no longer available") ||
                     ex.getMessage().contains("not available"));
         }
+    }
+
+    @Nested
+    @DisplayName("Edge Cases")
+    class EdgeCases {
+
+        @Test
+        @DisplayName("getAvailableSlotsByEmployee returns only the available slots")
+        void getAvailableSlotsByEmployee_OnlyAvailable() {
+            Employee employee = createEmployee();
+            Patient patient = createPatient();
+
+            ZonedDateTime start1 = nextWeekdayAt(8, 0);
+            ZonedDateTime end1 = start1.plusMinutes(30);
+            var slot1 = availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start1, end1), employee);
+
+            ZonedDateTime start2 = nextWeekdayAt(10, 0);
+            ZonedDateTime end2 = start2.plusMinutes(30);
+            var slot2 = availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start2, end2), employee);
+
+            // Boka slot1
+            appointmentService.bookAppointment(
+                    new AppointmentRequest(slot1.getId()), patient);
+
+            // getAvailableSlotsByEmployee ska endast returnera slot2 (AVAILABLE)
+            var available = availabilitySlotService.getAvailableSlotsByEmployee(
+                    employee.getId(), null, null);
+
+            assertTrue(available.stream().noneMatch(s -> s.getId().equals(slot1.getId())));
+            assertTrue(available.stream().anyMatch(s -> s.getId().equals(slot2.getId())));
+        }
+
+
 
     }
+
 
 }
