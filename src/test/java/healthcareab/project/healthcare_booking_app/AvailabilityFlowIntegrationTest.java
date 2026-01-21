@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -89,7 +90,7 @@ public class AvailabilityFlowIntegrationTest {
     class CompleteAvailabilityFlow {
 
         @Test
-        @DisplayName("Complete flow: Create slot -> list available -> book -> double book prevention")
+        @DisplayName("Komplett flöde: skapa slot → lista tillgängliga → boka → double-booking förhindras")
         void completeAvailabilityAndBookingFlow() {
             // Arrange
             Employee employee = createEmployee();
