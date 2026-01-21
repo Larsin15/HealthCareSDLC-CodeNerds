@@ -343,6 +343,24 @@ public class AvailabilitySlotServiceTest {
             assertEquals(newEnd, response.getEndTime());
         }
 
+        @Test
+        @DisplayName("Should throw error when slot doesnt exists")
+        void updateSlot_SlotNotFound_ShouldThrow() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.empty());
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.updateSlot(slotId, request, employee)
+            );
+            assertEquals("Slot not found", ex.getMessage());
+        }
+
 
 
 
