@@ -352,6 +352,35 @@ public class AvailabilitySlotControllerTest {
             verify(availabilitySlotService).updateSlot(eq(slotId), eq(request), eq(employee));
         }
 
+        @Test
+        @DisplayName("updateSlot throws exception when service throws")
+        void updateSlot_ServiceThrows_ShouldPropagate() {
+            setupSecurityContext(employee);
+
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(9).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            when(availabilitySlotService.updateSlot(any(), any(), any()))
+                    .thenThrow(new IllegalArgumentException("Slot not found"));
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> availabilitySlotController.updateSlot(slotId, request));
+        }
+
+        @Test
+        @DisplayName("cancelSlot returns 204 NO_CONTENT")
+        void cancelSlot_Success() {
+            setupSecurityContext(employee);
+
+            ResponseEntity<Void> response = availabilitySlotController.cancelSlot(slotId);
+
+            assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+            assertNull(response.getBody());
+            verify(availabilitySlotService).cancelSlot(eq(slotId), eq(employee));
+        }
+
 
 
 
