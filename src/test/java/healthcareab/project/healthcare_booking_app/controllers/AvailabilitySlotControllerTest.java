@@ -220,6 +220,35 @@ public class AvailabilitySlotControllerTest {
             assertEquals(slotId, response.getBody().get(0).getId());
         }
 
+        @Test
+        @DisplayName("getAvailableSlots returns a list with time filters")
+        void getAvailableSlots_WithTimeFilter() {
+            ZonedDateTime filterStart = ZonedDateTime.now(ZoneId.of("UTC"));
+            ZonedDateTime filterEnd = filterStart.plusMonths(1);
+            ZonedDateTime start = filterStart.plusDays(1).withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotResponse dto = new AvailabilitySlotResponse(
+                    slotId,
+                    employeeId,
+                    employee.getFirstName() + " " + employee.getLastName(),
+                    employee.getSpecialization(),
+                    start,
+                    end,
+                    SlotStatus.AVAILABLE
+            );
+
+            when(availabilitySlotService.getAvailableSlots(filterStart, filterEnd))
+                    .thenReturn(List.of(dto));
+
+            ResponseEntity<List<AvailabilitySlotResponse>> response =
+                    availabilitySlotController.getAvailableSlots(filterStart, filterEnd);
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals(1, response.getBody().size());
+            verify(availabilitySlotService).getAvailableSlots(eq(filterStart), eq(filterEnd));
+        }
+
 
 
 
