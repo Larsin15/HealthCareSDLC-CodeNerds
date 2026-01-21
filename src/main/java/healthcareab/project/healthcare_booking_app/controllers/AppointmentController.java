@@ -97,7 +97,7 @@ public class AppointmentController {
         return ResponseEntity.ok(result);
     }
 
-    // Helper method
+    // Helper method (sonar for testing purpose)
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
