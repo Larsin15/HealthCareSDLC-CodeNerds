@@ -147,6 +147,31 @@ public class AvailabilityFlowIntegrationTest {
             assertEquals(SlotStatus.BOOKED, stillBooked.getStatus());
         }
 
+        @Test
+        @DisplayName("Employee can create more slots and patients can see them")
+        void createMultipleSlots_AllVisible() {
+            Employee employee = createEmployee();
+            Patient patient = createPatient();
+
+            ZonedDateTime start1 = nextWeekdayAt(8, 0);
+            ZonedDateTime end1 = start1.plusMinutes(30);
+            var slot1 = availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start1, end1), employee);
+
+            ZonedDateTime start2 = nextWeekdayAt(10, 0);
+            ZonedDateTime end2 = start2.plusMinutes(30);
+            var slot2 = availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start2, end2), employee);
+
+            var availableSlots = availabilitySlotService.getAvailableSlots(null, null);
+
+            assertTrue(availableSlots.size() >= 2);
+            assertTrue(availableSlots.stream()
+                    .anyMatch(s -> s.getId().equals(slot1.getId())));
+            assertTrue(availableSlots.stream()
+                    .anyMatch(s -> s.getId().equals(slot2.getId())));
+        }
+
 
 
     }
