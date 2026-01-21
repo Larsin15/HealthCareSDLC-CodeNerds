@@ -416,7 +416,28 @@ public class AvailabilitySlotServiceTest {
             assertTrue(ex.getMessage().contains("Cannot update BOOKED slots"));
         }
 
+        @Test
+        @DisplayName("Cannot update an COMPLETE slot")
+        void updateSlot_Completed_ShouldThrow() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
 
+            AvailabilitySlot existing = new AvailabilitySlot(employee, start, end);
+            existing.setStatus(SlotStatus.COMPLETED);
+            setSlotId(existing, slotId);
+
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.updateSlot(slotId, request, employee)
+            );
+            assertTrue(ex.getMessage().contains("Cannot update COMPLETED slots"));
+        }
 
 
 
