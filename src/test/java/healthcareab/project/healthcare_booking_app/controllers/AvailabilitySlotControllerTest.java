@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -249,6 +249,37 @@ public class AvailabilitySlotControllerTest {
             verify(availabilitySlotService).getAvailableSlots(eq(filterStart), eq(filterEnd));
         }
 
+        @Test
+        @DisplayName("getAvailableSlotsByEmployee filters on employeeId")
+        void getAvailableSlotsByEmployee_Success() {
+            UUID requestedEmployeeId = employeeId;
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotResponse dto = new AvailabilitySlotResponse(
+                    slotId,
+                    employeeId,
+                    employee.getFirstName() + " " + employee.getLastName(),
+                    employee.getSpecialization(),
+                    start,
+                    end,
+                    SlotStatus.AVAILABLE
+            );
+
+            when(availabilitySlotService.getAvailableSlotsByEmployee(eq(requestedEmployeeId),
+                    any(), any())).thenReturn(List.of(dto));
+
+            ResponseEntity<List<AvailabilitySlotResponse>> response =
+                    availabilitySlotController.getAvailableSlotsByEmployee(requestedEmployeeId, null, null);
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertNotNull(response.getBody());
+            assertEquals(1, response.getBody().size());
+            assertEquals(slotId, response.getBody().get(0).getId());
+            verify(availabilitySlotService)
+                    .getAvailableSlotsByEmployee(eq(requestedEmployeeId), isNull(), isNull());
+        }
 
 
 
