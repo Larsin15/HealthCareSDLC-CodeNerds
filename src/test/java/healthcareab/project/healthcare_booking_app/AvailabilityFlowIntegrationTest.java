@@ -1,15 +1,17 @@
 package healthcareab.project.healthcare_booking_app;
 
 
-import healthcareab.project.healthcare_booking_app.models.Employee;
-import healthcareab.project.healthcare_booking_app.models.Patient;
-import healthcareab.project.healthcare_booking_app.models.Role;
+import healthcareab.project.healthcare_booking_app.dto.AppointmentRequest;
+import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotRequest;
+import healthcareab.project.healthcare_booking_app.models.*;
 import healthcareab.project.healthcare_booking_app.repository.AvailabilitySlotRepository;
 import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository;
 import healthcareab.project.healthcare_booking_app.repository.PatientRepository;
 import healthcareab.project.healthcare_booking_app.services.AppointmentService;
 import healthcareab.project.healthcare_booking_app.services.AvailabilitySlotService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -75,6 +79,76 @@ public class AvailabilityFlowIntegrationTest {
             candidate = candidate.plusDays(1);
         }
         return candidate;
+    }
+
+
+    @Nested
+    @DisplayName("Complete Availability Flow")
+    class CompleteAvailabilityFlow {
+
+        @Test
+        @DisplayName("Complete flow: Create slot -> list available -> book -> double book prevention")
+        void completeAvailabilityAndBookingFlow() {
+            // Arrange
+            Employee employee = createEmployee();
+            Patient patient = createPatient();
+
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotRequest slotRequest = new AvailabilitySlotRequest(start, end);
+
+            // 1) Employee skapar availability-slot
+            var slotResponse = availabilitySlotService.createSlot(slotRequest, employee);
+            assertNotNull(slotResponse.getId());
+            assertEquals(SlotStatus.AVAILABLE, slotResponse.getStatus());
+            assertEquals(employee.getId(), slotResponse.getEmployeeId());
+
+            // Verifiera att sloten finns i databasen
+            AvailabilitySlot savedSlot = availabilitySlotRepository.findById(slotResponse.getId())
+                    .orElseThrow();
+            assertEquals(SlotStatus.AVAILABLE, savedSlot.getStatus());
+            assertEquals(employee.getId(), savedSlot.getEmployee().getId());
+
+            // 2) Patient ser tillgängliga slots
+            var availableSlots = availabilitySlotService.getAvailableSlots(null, null);
+            assertFalse(availableSlots.isEmpty());
+            assertTrue(
+                    availableSlots.stream().anyMatch(s -> s.getId().equals(slotResponse.getId()))
+            );
+
+            // 3) Patient bokar sloten
+            AppointmentRequest appointmentRequest = new AppointmentRequest(slotResponse.getId());
+            var appointmentResponse =
+                    appointmentService.bookAppointment(appointmentRequest, patient);
+
+            assertNotNull(appointmentResponse.getId());
+            assertEquals(AppointmentStatus.BOOKED, appointmentResponse.getStatus());
+            assertEquals(slotResponse.getId(), appointmentResponse.getAvailabilitySlotId());
+            assertEquals(patient.getId(), appointmentResponse.getPatientId());
+            assertEquals(employee.getId(), appointmentResponse.getEmployeeId());
+
+            // Slotstatus ska vara BOOKED i databasen
+            AvailabilitySlot bookedSlot =
+                    availabilitySlotRepository.findById(slotResponse.getId()).orElseThrow();
+            assertEquals(SlotStatus.BOOKED, bookedSlot.getStatus());
+
+            // 4) Double-booking prevention: samma slot kan inte bokas igen
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> appointmentService.bookAppointment(appointmentRequest, patient)
+            );
+            assertTrue(ex.getMessage().contains("no longer available") ||
+                    ex.getMessage().contains("not available"));
+
+            // Verifiera att sloten fortfarande är BOOKED
+            AvailabilitySlot stillBooked =
+                    availabilitySlotRepository.findById(slotResponse.getId()).orElseThrow();
+            assertEquals(SlotStatus.BOOKED, stillBooked.getStatus());
+        }
+
+
+
     }
 
 }
