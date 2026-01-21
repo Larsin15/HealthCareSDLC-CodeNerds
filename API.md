@@ -1,6 +1,6 @@
 # Authentication API Documentation
 
-BASE URL: `https://localhost:8080/auth`
+BASE URL: `https://localhost:8080`
 
 ## Endpoints
 
