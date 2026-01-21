@@ -147,6 +147,24 @@ public class AvailabilitySlotServiceTest {
         }
 
 
+        @Test
+        @DisplayName("Should throw erroe when employee isnt available for booking")
+        void createSlot_EmployeeNotAvailableForBooking_ShouldThrow() {
+            employee.setAvailableForBooking(false);
+
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("Not available for booking"));
+        }
+
+
+
 
 
 
