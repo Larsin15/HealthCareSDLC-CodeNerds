@@ -21,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -239,6 +240,49 @@ public class AvailabilityFlowIntegrationTest {
             // Endast en slot i databasen
             List<AvailabilitySlot> slots = availabilitySlotRepository.findByEmployee(employee);
             assertEquals(1, slots.size());
+        }
+
+        @Test
+        @DisplayName("Prevent two patients from booking the same slot at the same time")
+        void preventConcurrentBookingOfSameSlot() {
+            Employee employee = createEmployee();
+            Patient patient1 = createPatient();
+            Patient patient2 = new Patient();
+            patient2.setUsername("patient2@test.com");
+            patient2.setPassword("Password123!");
+            patient2.setEmail("patient2@test.com");
+            patient2.setFirstName("Erik");
+            patient2.setLastName("Johansson");
+            patient2.setPhoneNumber("0707654321");
+            patient2.setDateOfBirth(LocalDate.of(1985, 5, 15));
+            patient2.setRoles(Set.of(Role.PATIENT));
+            patient2 = patientRepository.save(patient2);
+
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            var slot = availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start, end), employee);
+
+            // Patient 1 bokar
+            AppointmentRequest request = new AppointmentRequest(slot.getId());
+            var appointment1 = appointmentService.bookAppointment(request, patient1);
+            assertNotNull(appointment1.getId());
+
+            // Patient 2 försöker boka samma slot
+            final UUID slotIdForPatient2 = slot.getId();
+            final Patient finalPatient2 = patient2;
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> appointmentService.bookAppointment(
+                            new AppointmentRequest(slotIdForPatient2), finalPatient2)
+            );
+            assertTrue(ex.getMessage().contains("no longer available") ||
+                    ex.getMessage().contains("not available"));
+
+            // Verifiera att sloten är BOOKED
+            AvailabilitySlot bookedSlot =
+                    availabilitySlotRepository.findById(slot.getId()).orElseThrow();
+            assertEquals(SlotStatus.BOOKED, bookedSlot.getStatus());
         }
 
     }
