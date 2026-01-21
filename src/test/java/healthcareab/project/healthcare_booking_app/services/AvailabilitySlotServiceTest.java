@@ -240,7 +240,43 @@ public class AvailabilitySlotServiceTest {
             assertTrue(ex.getMessage().contains("working hours"));
         }
 
+        @Test
+        @DisplayName("Should throw error when duration isnt 30 minutes")
+        void createSlot_InvalidDuration_ShouldThrow() {
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(45);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
 
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("Slot duration must be exactly 30 minutes"));
+        }
+
+        @Test
+        @DisplayName("Should throw an error when overlapping with exist slot")
+        void createSlot_OverlappingSlot_ShouldThrow() {
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            ZonedDateTime existingStart = start.plusMinutes(15);
+            ZonedDateTime existingEnd = existingStart.plusMinutes(30);
+
+            AvailabilitySlot existing = new AvailabilitySlot(employee, existingStart, existingEnd);
+            existing.setStatus(SlotStatus.AVAILABLE);
+            setSlotId(existing, UUID.randomUUID());
+
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of(existing));
+
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("Slot overlaps with existing slot"));
+        }
 
 
 
