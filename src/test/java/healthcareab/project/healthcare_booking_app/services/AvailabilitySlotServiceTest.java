@@ -658,10 +658,23 @@ public class AvailabilitySlotServiceTest {
             assertEquals("Employee not found", ex.getMessage());
         }
 
+        @Test
+        @DisplayName("getAvailableSlotsByEmployee should throw when employee isnt available")
+        void getAvailableSlotsByEmployee_EmployeeNotAvailable_ShouldThrow() {
+            Employee unavailableEmployee = new Employee();
+            unavailableEmployee.setAvailableForBooking(false);
+            setUserId(unavailableEmployee, UUID.randomUUID());
 
+            when(employeeRepository.findById(unavailableEmployee.getId()))
+                    .thenReturn(java.util.Optional.of(unavailableEmployee));
 
-
-
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.getAvailableSlotsByEmployee(
+                            unavailableEmployee.getId(), null, null)
+            );
+            assertTrue(ex.getMessage().contains("not available for booking"));
+        }
     }
 
 
