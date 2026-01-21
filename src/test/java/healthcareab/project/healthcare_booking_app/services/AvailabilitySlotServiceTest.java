@@ -277,10 +277,35 @@ public class AvailabilitySlotServiceTest {
             );
             assertTrue(ex.getMessage().contains("Slot overlaps with existing slot"));
         }
+        @Test
+        @DisplayName("Should ignore CANCELLED slot in overlap control")
+        void createSlot_OverlapWithCancelledSlot_ShouldSucceed() {
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            ZonedDateTime cancelledStart = start.plusMinutes(15);
+            ZonedDateTime cancelledEnd = cancelledStart.plusMinutes(30);
 
+            AvailabilitySlot cancelled = new AvailabilitySlot(employee, cancelledStart, cancelledEnd);
+            cancelled.setStatus(SlotStatus.CANCELLED);
+            setSlotId(cancelled, UUID.randomUUID());
 
+            AvailabilitySlot savedSlot = new AvailabilitySlot(employee, start, end);
+            savedSlot.setStatus(SlotStatus.AVAILABLE);
+            UUID slotId = UUID.randomUUID();
+            setSlotId(savedSlot, slotId);
 
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of(cancelled));
+            when(availabilitySlotRepository.save(any(AvailabilitySlot.class)))
+                    .thenReturn(savedSlot);
 
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+            AvailabilitySlotResponse response =
+                    availabilitySlotService.createSlot(request, employee);
+
+            assertNotNull(response);
+            assertEquals(slotId, response.getId());
+        }
     }
 
 
