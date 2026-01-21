@@ -468,6 +468,27 @@ public class AvailabilitySlotServiceTest {
         }
 
     }
+    // ========== CANCEL SLOT TESTS ==========
+
+        @Test
+        @DisplayName("Deleting available slot")
+        void cancelSlot_Available_ShouldDelete() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlot existing = new AvailabilitySlot(employee, start, end);
+            existing.setStatus(SlotStatus.AVAILABLE);
+            setSlotId(existing, slotId);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+
+            availabilitySlotService.cancelSlot(slotId, employee);
+
+            verify(availabilitySlotRepository).delete(existing);
+            verify(availabilitySlotRepository, never()).save(any());
+        }
 
 
 
