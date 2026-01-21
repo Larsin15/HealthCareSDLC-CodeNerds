@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -170,7 +169,68 @@ public class AvailabilitySlotControllerTest {
             assertEquals(slotId, response.getBody().get(0).getId());
             verify(availabilitySlotService).getMySlots(eq(employee));
         }
+
+        @Test
+        @DisplayName("Retur an empty list when employees doesnt have any slots")
+        void getMySlots_Empty() {
+            setupSecurityContext(employee);
+
+            when(availabilitySlotService.getMySlots(eq(employee)))
+                    .thenReturn(List.of());
+
+            ResponseEntity<List<AvailabilitySlotResponse>> response =
+                    availabilitySlotController.getMySlots();
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertNotNull(response.getBody());
+            assertTrue(response.getBody().isEmpty());
+        }
     }
+
+    @Nested
+    @DisplayName("Available Slots Endpoints")
+    class AvailableSlotsEndpoints {
+
+        @Test
+        @DisplayName("getAvailableSlots returns a list without filters")
+        void getAvailableSlots_NoParams() {
+            ZonedDateTime start = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1)
+                    .withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotResponse dto = new AvailabilitySlotResponse(
+                    slotId,
+                    employeeId,
+                    employee.getFirstName() + " " + employee.getLastName(),
+                    employee.getSpecialization(),
+                    start,
+                    end,
+                    SlotStatus.AVAILABLE
+            );
+
+            when(availabilitySlotService.getAvailableSlots(null, null))
+                    .thenReturn(List.of(dto));
+
+            ResponseEntity<List<AvailabilitySlotResponse>> response =
+                    availabilitySlotController.getAvailableSlots(null, null);
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertNotNull(response.getBody());
+            assertEquals(1, response.getBody().size());
+            assertEquals(slotId, response.getBody().get(0).getId());
+        }
+
+
+
+
+
+
+
+
+
+    }
+
+
 
 
 }
