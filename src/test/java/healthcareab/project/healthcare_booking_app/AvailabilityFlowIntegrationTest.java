@@ -383,10 +383,41 @@ public class AvailabilityFlowIntegrationTest {
             );
             assertTrue(ex.getMessage().contains("not available for booking"));
         }
+        @Test
+        @DisplayName("getAvailableSlots filters slots from employee that isnt available")
+        void getAvailableSlots_FiltersUnavailableEmployees() {
+            Employee availableEmployee = createEmployee();
+            Employee unavailableEmployee = new Employee();
+            unavailableEmployee.setUsername("unavailable@test.com");
+            unavailableEmployee.setPassword("Password123!");
+            unavailableEmployee.setEmail("unavailable@test.com");
+            unavailableEmployee.setFirstName("Dr");
+            unavailableEmployee.setLastName("Unavailable");
+            unavailableEmployee.setEmployeeNumber("E0003");
+            unavailableEmployee.setSpecialization("General");
+            unavailableEmployee.setAvailableForBooking(false); // Inte tillgänglig
+            unavailableEmployee.setRoles(Set.of(Role.EMPLOYEE));
+            unavailableEmployee = employeeRepository.save(unavailableEmployee);
 
+            ZonedDateTime start1 = nextWeekdayAt(8, 0);
+            ZonedDateTime end1 = start1.plusMinutes(30);
+            availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start1, end1), availableEmployee);
 
+            // Försök skapa slot för unavailable employee (ska kasta exception)
+            ZonedDateTime start2 = nextWeekdayAt(9, 0);
+            ZonedDateTime end2 = start2.plusMinutes(30);
+            final AvailabilitySlotRequest requestForUnavailable =
+                    new AvailabilitySlotRequest(start2, end2);
+            final Employee finalUnavailableEmployee = unavailableEmployee;
+            assertThrows(IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(
+                            requestForUnavailable, finalUnavailableEmployee));
 
+            // getAvailableSlots ska endast returnera slots från availableEmployee
+            var available = availabilitySlotService.getAvailableSlots(null, null);
+            assertTrue(available.stream()
+                    .allMatch(s -> s.getEmployeeId().equals(availableEmployee.getId())));
+        }
     }
-
-
 }
