@@ -32,8 +32,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AvailabilitySlotController Unit Tests")
@@ -379,6 +378,18 @@ public class AvailabilitySlotControllerTest {
             assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
             assertNull(response.getBody());
             verify(availabilitySlotService).cancelSlot(eq(slotId), eq(employee));
+        }
+
+        @Test
+        @DisplayName("cancelSlot throws exception when service throws")
+        void cancelSlot_ServiceThrows_ShouldPropagate() {
+            setupSecurityContext(employee);
+
+            doThrow(new IllegalArgumentException("Slot not found"))
+                    .when(availabilitySlotService).cancelSlot(any(), any());
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> availabilitySlotController.cancelSlot(slotId));
         }
 
 
