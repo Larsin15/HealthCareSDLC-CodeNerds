@@ -439,7 +439,33 @@ public class AvailabilitySlotServiceTest {
             assertTrue(ex.getMessage().contains("Cannot update COMPLETED slots"));
         }
 
+        @Test
+        @DisplayName("Should exclude itself in overlapping control in update")
+        void updateSlot_ExcludeSelfFromOverlapCheck_ShouldSucceed() {
+            UUID slotId = UUID.randomUUID();
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
 
+            AvailabilitySlot existing = new AvailabilitySlot(employee, start, end);
+            existing.setStatus(SlotStatus.AVAILABLE);
+            setSlotId(existing, slotId);
+
+            // Samma tid som redan finns, men det är samma slot
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.of(existing));
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of(existing));
+            when(availabilitySlotRepository.save(any(AvailabilitySlot.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            // Ska inte kasta exception eftersom vi exkluderar den slot vi uppdaterar
+            AvailabilitySlotResponse response =
+                    availabilitySlotService.updateSlot(slotId, request, employee);
+
+            assertNotNull(response);
+        }
 
     }
 
