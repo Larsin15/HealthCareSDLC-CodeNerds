@@ -40,7 +40,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CORS config
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // CSRF, disable in dev
                 // OBS! should not be disabled in production
@@ -63,6 +62,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return  http.build();
     }
+
 
 
     @Bean
