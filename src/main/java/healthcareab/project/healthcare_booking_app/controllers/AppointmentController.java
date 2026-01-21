@@ -107,5 +107,6 @@ public class AppointmentController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         return authService.findByUsername(userDetails.getUsername());
     }
+
 }
 
