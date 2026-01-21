@@ -355,6 +355,35 @@ public class AvailabilityFlowIntegrationTest {
             assertTrue(available.stream().anyMatch(s -> s.getId().equals(slot2.getId())));
         }
 
+        @Test
+        @DisplayName("Employee cannot create a slot when availableForBooking is false")
+        void createSlot_EmployeeNotAvailable_ShouldFail() {
+            // Skapa en ny employee med availableForBooking = false direkt
+            Employee employee = new Employee();
+            employee.setUsername("unavailable2@test.com");
+            employee.setPassword("Password123!");
+            employee.setEmail("unavailable2@test.com");
+            employee.setFirstName("Dr");
+            employee.setLastName("Unavailable2");
+            employee.setEmployeeNumber("E0004");
+            employee.setSpecialization("General");
+            employee.setAvailableForBooking(false);
+            employee.setRoles(Set.of(Role.EMPLOYEE));
+            employee = employeeRepository.save(employee);
+
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+
+            final AvailabilitySlotRequest finalRequest = request;
+            final Employee finalEmployee = employee;
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(finalRequest, finalEmployee)
+            );
+            assertTrue(ex.getMessage().contains("not available for booking"));
+        }
+
 
 
     }
