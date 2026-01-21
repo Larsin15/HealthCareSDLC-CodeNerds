@@ -285,6 +285,43 @@ public class AvailabilityFlowIntegrationTest {
             assertEquals(SlotStatus.BOOKED, bookedSlot.getStatus());
         }
 
+        @Test
+        @DisplayName("Prevent patients from booking an already booked slot")
+        void preventBookingAlreadyBookedSlot() {
+            Employee employee = createEmployee();
+            Patient patient1 = createPatient();
+            Patient patient2 = new Patient();
+            patient2.setUsername("patient2@test.com");
+            patient2.setPassword("Password123!");
+            patient2.setEmail("patient2@test.com");
+            patient2.setFirstName("Erik");
+            patient2.setLastName("Johansson");
+            patient2.setPhoneNumber("0707654321");
+            patient2.setDateOfBirth(LocalDate.of(1985, 5, 15));
+            patient2.setRoles(Set.of(Role.PATIENT));
+            patient2 = patientRepository.save(patient2);
+
+            ZonedDateTime start = nextWeekdayAt(10, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+            var slot = availabilitySlotService.createSlot(
+                    new AvailabilitySlotRequest(start, end), employee);
+
+            // Patient 1 bokar
+            AppointmentRequest request1 = new AppointmentRequest(slot.getId());
+            appointmentService.bookAppointment(request1, patient1);
+
+            // Patient 2 försöker boka samma slot (direkt efter)
+            final UUID slotIdForPatient2 = slot.getId();
+            final Patient finalPatient2 = patient2;
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> appointmentService.bookAppointment(
+                            new AppointmentRequest(slotIdForPatient2), finalPatient2)
+            );
+            assertTrue(ex.getMessage().contains("no longer available") ||
+                    ex.getMessage().contains("not available"));
+        }
+
     }
 
 }
