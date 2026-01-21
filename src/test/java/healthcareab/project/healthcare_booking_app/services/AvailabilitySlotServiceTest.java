@@ -178,6 +178,25 @@ public class AvailabilitySlotServiceTest {
             assertEquals("Cannot create slots in the past", ex.getMessage());
         }
 
+        @Test
+        @DisplayName("Should throw error when trying to create in weekends")
+        void createSlot_Weekends_ShouldThrow() {
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Europe/Stockholm"));
+            ZonedDateTime saturday = now.plusDays(1);
+            while (saturday.getDayOfWeek() != DayOfWeek.SATURDAY) {
+                saturday = saturday.plusDays(1);
+            }
+            saturday = saturday.withHour(9).withMinute(0).withSecond(0).withNano(0);
+            ZonedDateTime end = saturday.plusMinutes(30);
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(saturday, end);
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.createSlot(request, employee)
+            );
+            assertTrue(ex.getMessage().contains("weekdays (Monday-Friday)"));
+        }
+
 
 
 
