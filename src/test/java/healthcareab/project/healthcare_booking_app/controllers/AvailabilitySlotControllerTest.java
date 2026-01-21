@@ -281,6 +281,40 @@ public class AvailabilitySlotControllerTest {
                     .getAvailableSlotsByEmployee(eq(requestedEmployeeId), isNull(), isNull());
         }
 
+        @Test
+        @DisplayName("getAvailableSlotsByEmployee with time filters")
+        void getAvailableSlotsByEmployee_WithTimeFilter() {
+            UUID requestedEmployeeId = employeeId;
+            ZonedDateTime filterStart = ZonedDateTime.now(ZoneId.of("UTC"));
+            ZonedDateTime filterEnd = filterStart.plusMonths(2);
+
+            ZonedDateTime start = filterStart.plusDays(1).withHour(8).withMinute(0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotResponse dto = new AvailabilitySlotResponse(
+                    slotId,
+                    employeeId,
+                    employee.getFirstName() + " " + employee.getLastName(),
+                    employee.getSpecialization(),
+                    start,
+                    end,
+                    SlotStatus.AVAILABLE
+            );
+
+            when(availabilitySlotService.getAvailableSlotsByEmployee(
+                    eq(requestedEmployeeId), eq(filterStart), eq(filterEnd)))
+                    .thenReturn(List.of(dto));
+
+            ResponseEntity<List<AvailabilitySlotResponse>> response =
+                    availabilitySlotController.getAvailableSlotsByEmployee(
+                            requestedEmployeeId, filterStart, filterEnd);
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals(1, response.getBody().size());
+            verify(availabilitySlotService).getAvailableSlotsByEmployee(
+                    eq(requestedEmployeeId), eq(filterStart), eq(filterEnd));
+        }
+
 
 
 
