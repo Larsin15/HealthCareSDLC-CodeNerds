@@ -537,6 +537,21 @@ public class AvailabilitySlotServiceTest {
             assertTrue(ex.getMessage().contains("Cannot cancel completed slots"));
         }
 
+        @Test
+        @DisplayName("Throw when slot doesnt exist")
+        void cancelSlot_SlotNotFound_ShouldThrow() {
+            UUID slotId = UUID.randomUUID();
+
+            when(availabilitySlotRepository.findById(slotId))
+                    .thenReturn(java.util.Optional.empty());
+
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> availabilitySlotService.cancelSlot(slotId, employee)
+            );
+            assertEquals("Slot not found", ex.getMessage());
+        }
+
 
 
 
