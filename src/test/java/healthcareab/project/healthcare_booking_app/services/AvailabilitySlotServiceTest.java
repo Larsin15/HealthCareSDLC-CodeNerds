@@ -1,9 +1,8 @@
 package healthcareab.project.healthcare_booking_app.services;
 
-import healthcareab.project.healthcare_booking_app.models.AvailabilitySlot;
-import healthcareab.project.healthcare_booking_app.models.Employee;
-import healthcareab.project.healthcare_booking_app.models.Role;
-import healthcareab.project.healthcare_booking_app.models.User;
+import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotRequest;
+import healthcareab.project.healthcare_booking_app.dto.AvailabilitySlotResponse;
+import healthcareab.project.healthcare_booking_app.models.*;
 import healthcareab.project.healthcare_booking_app.repository.AvailabilitySlotRepository;
 import healthcareab.project.healthcare_booking_app.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,8 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.DayOfWeek;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AvailabilitySlotService Unit Tests")
@@ -91,6 +96,43 @@ public class AvailabilitySlotServiceTest {
     @Nested
     @DisplayName("Create slot tests")
     class CreateSlotTests {
+
+        @Test
+        @DisplayName("Skapar slot när allt är giltigt")
+        void createSlot_Success() {
+            ZonedDateTime start = nextWeekdayAt(9, 0);
+            ZonedDateTime end = start.plusMinutes(30);
+
+            AvailabilitySlotRequest request = new AvailabilitySlotRequest(start, end);
+            AvailabilitySlot savedSlot = new AvailabilitySlot(employee, start, end);
+            savedSlot.setStatus(SlotStatus.AVAILABLE);
+            UUID slotId = UUID.randomUUID();
+            setSlotId(savedSlot, slotId);
+
+            when(availabilitySlotRepository.findByEmployee(employee))
+                    .thenReturn(List.of());
+            when(availabilitySlotRepository.save(any(AvailabilitySlot.class)))
+                    .thenReturn(savedSlot);
+
+            AvailabilitySlotResponse response =
+                    availabilitySlotService.createSlot(request, employee);
+
+            assertNotNull(response);
+            assertEquals(slotId, response.getId());
+            assertEquals(employeeId, response.getEmployeeId());
+            assertEquals(start, response.getStartTime());
+            assertEquals(end, response.getEndTime());
+            assertEquals(SlotStatus.AVAILABLE, response.getStatus());
+
+            ArgumentCaptor<AvailabilitySlot> captor =
+                    ArgumentCaptor.forClass(AvailabilitySlot.class);
+            verify(availabilitySlotRepository).save(captor.capture());
+            assertEquals(SlotStatus.AVAILABLE, captor.getValue().getStatus());
+        }
+
+
+
+
 
     }
 
