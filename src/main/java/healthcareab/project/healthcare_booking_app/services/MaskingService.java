@@ -1,6 +1,6 @@
 package healthcareab.project.healthcare_booking_app.services;
 
-
+import healthcareab.project.healthcare_booking_app.dto.PatientResponse;
 import healthcareab.project.healthcare_booking_app.models.Patient;
 import org.springframework.stereotype.Service;
 
@@ -49,5 +49,63 @@ public class MaskingService {
         return first + "*".repeat(stars);
     }
 
+    /**
+     * Returns a masked PatientResponse for GDPR-safe responses.
+     * First/last/full name are masked via maskName.
+     */
+    public PatientResponse maskPatientData(Patient patient) {
+        if (patient == null) {
+            return null;
+        }
 
+        PatientResponse response = new PatientResponse();
+        response.setId(patient.getId());
+        response.setUsername(patient.getUsername());
+        response.setEmail(patient.getEmail());
+
+        String first = patient.getFirstName();
+        String last = patient.getLastName();
+
+        response.setFirstName(maskName(first));
+        response.setLastName(maskName(last));
+        response.setFullName(maskName(
+                (first != null ? first : "") + " " + (last != null ? last : "")
+        ));
+
+        response.setAddress(patient.getAddress());
+        response.setPhoneNumber(patient.getPhoneNumber());
+        response.setDateOfBirth(patient.getDateOfBirth());
+        response.setRoles(patient.getRoles());
+        response.setCreatedAt(patient.getCreatedAt());
+        response.setUpdatedAt(patient.getUpdatedAt());
+
+        return response;
+    }
+
+    /**
+     * Helper to build either masked or unmasked PatientResponse.
+     */
+    public PatientResponse toPatientResponse(Patient patient, boolean mask) {
+        if (!mask) {
+            PatientResponse response = new PatientResponse();
+            response.setId(patient.getId());
+            response.setUsername(patient.getUsername());
+            response.setEmail(patient.getEmail());
+            response.setFirstName(patient.getFirstName());
+            response.setLastName(patient.getLastName());
+            response.setFullName(
+                    (patient.getFirstName() != null ? patient.getFirstName() : "") +
+                            " " +
+                            (patient.getLastName() != null ? patient.getLastName() : "")
+            );
+            response.setAddress(patient.getAddress());
+            response.setPhoneNumber(patient.getPhoneNumber());
+            response.setDateOfBirth(patient.getDateOfBirth());
+            response.setRoles(patient.getRoles());
+            response.setCreatedAt(patient.getCreatedAt());
+            response.setUpdatedAt(patient.getUpdatedAt());
+            return response;
+        }
+        return maskPatientData(patient);
+    }
 }

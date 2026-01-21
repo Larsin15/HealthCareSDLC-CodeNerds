@@ -185,5 +185,26 @@ public class AppointmentService {
         }
         return (Employee) user;
     }
+
+    /**
+     * Checks if an employee has an assigned appointment with a patient.
+     * Returns true if a BOOKED (and optionally CONFIRMED if added later) appointment exists.
+     */
+    @Transactional(readOnly = true)
+    public boolean hasAssignedAppointment(Employee employee, Patient patient) {
+        if (employee == null || patient == null) {
+            return false;
+        }
+
+        // Currently we have BOOKED, CANCELLED, COMPLETED
+        // If you later add CONFIRMED, include it here.
+        List<AppointmentStatus> statuses = List.of(AppointmentStatus.BOOKED);
+
+        return appointmentRepository.existsByEmployeeAndPatientAndStatusIn(
+                employee,
+                patient,
+                statuses
+        );
+    }
 }
 

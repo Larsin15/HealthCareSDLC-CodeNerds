@@ -1,8 +1,6 @@
 package healthcareab.project.healthcare_booking_app.repository;
 
-import healthcareab.project.healthcare_booking_app.models.Appointment;
-import healthcareab.project.healthcare_booking_app.models.AppointmentStatus;
-import healthcareab.project.healthcare_booking_app.models.AvailabilitySlot;
+import healthcareab.project.healthcare_booking_app.models.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,6 +42,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.availabilitySlot.id = :slotId")
     boolean existsByAvailabilitySlotId(@Param("slotId") UUID slotId);
+
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a " +
+            "WHERE a.employee = :employee AND a.patient = :patient " +
+            "AND a.status IN :statuses")
+    boolean existsByEmployeeAndPatientAndStatusIn(
+            @Param("employee") Employee employee,
+            @Param("patient") Patient patient,
+            @Param("statuses") List<AppointmentStatus> statuses);
 }
 
 
