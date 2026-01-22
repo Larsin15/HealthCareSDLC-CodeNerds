@@ -49,7 +49,7 @@ the user is assigned the default role of "user", which is PATIENT.
   "firstName": "string",
   "lastName": "string",
   "phoneNumber": "string",
-  "role": "ROLE"
+  "role": "EMPLOYEE"
 }
 ```
 
