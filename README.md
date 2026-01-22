@@ -1,14 +1,27 @@
 # Healthcare_booking_app
 
-A demo healthcare booking application built with Spring Boot.
+A demo healthcare booking application built with Spring Boot and Maven. This application allows users to book appointments with healthcare providers.
+
+## Main featurues
+
+- User registration and authentication
+- Appointment booking and management
+- Role-based access control (Patient, Employee)
+- RESTful API design
+- Data validation and error handling
+- Unit and integration testing
+- In-memory database for development and testing
+- SonarQube integration for code quality analysis
 
 ## Table of Contents
+
 - [TESTING](#testing)
 - [API](#api)
 - [ARCHITECTURE](#architecture)
 - [LICENSE](#license)
 
 ## Installation
+
 1. Clone the repository(change "username" with your github username):
    ```bash
    git clone https://github.com/username/healthcare_booking_app.git
