@@ -34,6 +34,7 @@ public class AuthController {
     private final AuthService authService;
     private final UserFactory userFactory;
 
+
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, AuthService authService, UserFactory userFactory) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
