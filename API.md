@@ -1,6 +1,6 @@
 # Authentication API Documentation
 
-BASE URL: `https://localhost:8080/auth`
+BASE URL: `https://localhost:8080`
 
 ## Endpoints
 
@@ -35,7 +35,7 @@ the user is assigned the default role of "user", which is PATIENT.
   ],
   "email": "string",
   "firstName": "string",
-  "lastName": "string",
+  "lastName": "string"
 }
 ```
 
@@ -49,7 +49,7 @@ the user is assigned the default role of "user", which is PATIENT.
   "firstName": "string",
   "lastName": "string",
   "phoneNumber": "string",
-  "role": "DOCTOR" | "NURSE" | "RECEPTIONIST"
+  "role": "EMPLOYEE"
 }
 ```
 
